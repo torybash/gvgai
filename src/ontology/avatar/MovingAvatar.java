@@ -5,7 +5,6 @@ import core.competition.CompetitionParameters;
 import core.content.SpriteContent;
 import core.game.Game;
 import ontology.Types;
-import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
 import tools.Utils;
 import tools.Vector2d;
@@ -105,14 +104,8 @@ public class MovingAvatar extends VGDLSprite {
         game.ki.reset();
         game.ki.setAction(action);
 
-
         Vector2d action2D = Utils.processMovementActionKeys(game.ki.getMask());
 
-        if (this.player instanceof controllers.human.Agent){
-        	game.ki.reset();
-        	if (action == ACTIONS.ACTION_USE) game.ki.setAction(action);
-        }
-        
         if(action2D != Types.NONE)
             hasMoved = true;
 
