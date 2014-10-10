@@ -1,13 +1,9 @@
-package controllers.shootAndDontDie;
+package controllers.dontDie;
 
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.TreeSet;
 
-import core.game.ForwardModel;
-import core.game.StateObservation;
-import ontology.Types.ACTIONS;
 import tools.Vector2d;
+import core.game.StateObservation;
 
 public class Node {
 	public StateObservation state;
@@ -19,7 +15,6 @@ public class Node {
 		this.lastAvatarPos = lastAvatarPos;
 		this.list = list;
 	}
-	
 	
 	public void addAction(int act){
 		list.add(act);
