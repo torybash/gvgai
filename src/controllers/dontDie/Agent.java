@@ -27,8 +27,8 @@ public class Agent extends AbstractPlayer{
     int heightOfLevel = -1;
     int widthOfLevel = -1;
     
-    final boolean VERBOSE = true;
-    final boolean LOOP_VERBOSE = true;
+    final boolean VERBOSE = false;
+    final boolean LOOP_VERBOSE = false;
     
     //Constants
     final float K_score = 1.414213562373095f;
@@ -137,7 +137,7 @@ public class Agent extends AbstractPlayer{
             //Get the new states avatar position and score
             pos = n.state.getAvatarPosition();
             double stateScore = value(n.state);
-            if (pos == null) stateScore = -loseValue; //avatar doesn't exists! Give stateScore a "lose"-value
+            if (pos == null) stateScore = loseValue; //avatar doesn't exists! Give stateScore a "lose"-value
             
             if (depth > 0){
             	//Examine the bestVals/bestNodes value: the score difference - dif
@@ -248,7 +248,7 @@ public class Agent extends AbstractPlayer{
         if (Math.abs(worstVal-bestVal)/Math.abs(bestVal) > ratioForActualBest) noActualBest = false; 
         
         //Choose action if an "actualBest" node exists
-        if (!noActualBest) action = bestNode.list.peekFirst();
+        if (!noActualBest && bestNode.list.size() > 0) action = bestNode.list.peekFirst();
         
         //Otherwise pick the least boring move (from leastBoringActions)
         if (noActualBest){
@@ -290,11 +290,16 @@ public class Agent extends AbstractPlayer{
         deadwayThreshold *= numIters/300f;
         deadGeneralThreshold *= numIters/300f;
        
+        if (action == -1)  action = r.nextInt(actions.length);
         if (generalDeadliness > deadGeneralThreshold || deathActions[action] > deadwayThreshold){
         	action = leastDeadlyAct;
         	spooked = true;
         }
 
+        
+        //Still haven't found an action?! Pick a random one
+        if (action == -1)  action = r.nextInt(actions.length);
+        
        if (VERBOSE){
     	   System.out.println("deadwayThreshold: " + deadwayThreshold + " deadGeneralThreshold: " + deadGeneralThreshold + " - pos boring: " + positionBoringness);
     	   if (noActualBest) System.out.println("NO ACTUAL BEST MOVE"); else System.out.println();
@@ -316,8 +321,7 @@ public class Agent extends AbstractPlayer{
        }
        lastGeneralDeadliness = generalDeadliness;
        
-       //Still haven't found an action?! Pick a random one
-       if (action == -1)  action = r.nextInt(actions.length);
+
 
        return actions[action];
 	}
