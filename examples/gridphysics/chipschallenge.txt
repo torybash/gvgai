@@ -32,8 +32,8 @@ BasicGame
         exit > Immovable img=goal
         chip > Resource img=gold limit=11 value=0
         avatar > OrientedAvatar img=alien
-            normal > OrientedAvatar img=alien
-            gliding > InertialAvatar img=ghost
+            #normal > OrientedAvatar img=alien
+            #gliding > InertialAvatar img=ghost
             
     
     LevelMapping

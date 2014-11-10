@@ -1,7 +1,9 @@
 BasicGame
     SpriteSet
-        hole   > Immovable color=DARKBLUE img=hole
+
         ground > Immovable img=water
+        hole   > Immovable color=DARKBLUE img=hole
+        holefilled  > Immovable color=DARKBLUE img=hole
         avatar > MovingAvatar # cooldown=4
         box    > Passive img=box
         boxin  > Passive img=city
@@ -22,5 +24,8 @@ BasicGame
         boxin boxin     > undoAll
         box hole    > transformTo stype=boxin scoreChange=1
         boxin ground > transformTo stype=box scoreChange=-1
+        holefilled avatar > transformTo stype=hole 
+        hole boxin > transformTo stype=holefilled
+        
     TerminationSet
-        SpriteCounter stype=box    limit=0 win=True
+        MultiSpriteCounter stype1=box stype2=hole    limit=0 win=True

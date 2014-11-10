@@ -7,7 +7,7 @@ BasicGame
         avatar > MovingAvatar #cooldown=4
             nokey > img=alien #cooldown=4
             withkey > img=alien #cooldown=4
-        goal > Immovable img=door
+        goal > Immovable img=door singleton=TRUE
         crate    > Passive img=box shrinkfactor=0.8
         boulder    > Passive img=boulder shrinkfactor=0.8
         holefilling > Flicker img=box limit=0

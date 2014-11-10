@@ -3,22 +3,20 @@
 BasicGame
     SpriteSet
         hole   > Immovable color=DARKBLUE img=hole
-        ground > Immovable color=WHITE
         avatar > MovingAvatar #cooldown=4
             nokey > img=alien #cooldown=4
             withkey > img=alien #cooldown=4
         mushroom > Immovable img=mushroom
-        key > Passive img=key
-        goal > Immovable img=door
+        key > Passive img=key singleton=TRUE
+        goal > Immovable img=door singleton=TRUE
         box    > Passive img=box shrinkfactor=0.8
         holefilling > Flicker img=box limit=0
     LevelMapping
-        . > ground
         0 > hole
-        1 > box ground
-        K > key ground
+        1 > box
+        K > key
         G > goal
-        M > mushroom ground
+        M > mushroom
     InteractionSet
         avatar wall > stepBack
         avatar hole > killSprite
@@ -26,6 +24,7 @@ BasicGame
         box wall    > undoAll
         box box     > undoAll
         box mushroom > undoAll
+        box goal > undoAll
         box hole    > transformTo stype=holefilling scoreChange=1
         hole holefilling > killSprite
         nokey key > transformTo stype=withkey
