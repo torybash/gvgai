@@ -576,7 +576,10 @@ public class ForwardModel extends Game
     {
         if(isEnded)
             return Types.NIL;
-        return avatar.getPosition();
+        if (avatar != null)
+            return avatar.getPosition();
+        
+        return null;
     }
 
     /**

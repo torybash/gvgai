@@ -12,6 +12,7 @@ import ontology.avatar.MovingAvatar;
 import ontology.effects.Effect;
 import ontology.sprites.Resource;
 import tools.*;
+import tools.ElapsedCpuTimer.TimerType;
 
 import java.awt.*;
 import java.util.*;
@@ -372,6 +373,7 @@ public abstract class Game
         avatar = null;
         score = 0;
         disqualified=false;
+        tooLongECT = null;
 
         //For each sprite type...
         for(int i = 0; i < spriteGroups.length; ++i)
@@ -571,11 +573,33 @@ public abstract class Game
         this.terminationHandling();     //check for game termination.
         this.checkTimeOut();            //Check for end of game by time steps.
 
+        
+        this.checkTooLongTick();
         //if(gameTick == 0 || isEnded)
         //    fwdModel.printObservationGrid(); //uncomment this to show the observation grid.
     }
 
-    /**
+    ElapsedCpuTimer tooLongECT = null;
+    long lastElapsed = 0;
+    
+    private void checkTooLongTick() {
+		if (tooLongECT == null){
+			tooLongECT = new ElapsedCpuTimer(TimerType.CPU_TIME);
+		}else{
+			long elapsed = tooLongECT.elapsedMillis();
+			
+			if (elapsed - lastElapsed > CompetitionParameters.ACTION_TIME_DISQ + 5){
+				System.out.println("lastElapsed: " + lastElapsed + " - elapsed: " + elapsed);
+				System.out.println("Game has been diqualiefied for taking too lang on a frame");
+				disqualify();
+			}else{ 
+				lastElapsed = elapsed;
+			}
+		}
+		
+	}
+
+	/**
      * Handles the result for the game, considering disqualifications. Prints the result
      * (score, time and winner) and returns the score of the game.
      * @return the result of the game.
@@ -949,7 +973,8 @@ public abstract class Game
     {
         if(num_sprites > MAX_SPRITES)
         {
-            System.out.println("Sprite limit reached");
+        	disqualify();
+        	System.out.println("Sprite limit reached. Disqualifiying to save time. Tick:" + getGameTick() + " - class: " + this.getClass().getSimpleName());
             return null;
         }
 
