@@ -29,6 +29,7 @@ public class Test
         String randomOneStepController = "controllers.randomOneStep.Agent";
         String randomController = "controllers.random.Agent";
         String doNothingController = "controllers.doNothing.Agent";
+        String MCTSishController = "controllers.MCTSish.Agent";
 
         //Available games:
         String gamesPath = "examples/gridphysics/";
@@ -47,12 +48,12 @@ public class Test
                 "camelRace", "digdug", "firestorms", "infection", "firecaster",
                 "overload", "pacman", "seaquest", "whackamole", "eggomania"};
         
-        games = new String[]{"aliens", "boulderdash", "butterflies", "chase", "frogs",
-                "missilecommand", "portals", "sokoban", "survivezombies", "zelda",
-                "camelRace", "digdug", "firestorms", "infection", "firecaster",
-                "overload", "pacman", "seaquest", "whackamole", "eggomania",
-                "bait", "boloadventures", "bombuzal", "brainman", "chipschallenge",
-                "modality", "painter", "realsokoban", "thecitadel", "zenpuzzle"};
+//        games = new String[]{"aliens", "boulderdash", "butterflies", "chase", "frogs",
+//                "missilecommand", "portals", "sokoban", "survivezombies", "zelda",
+//                "camelRace", "digdug", "firestorms", "infection", "firecaster",
+//                "overload", "pacman", "seaquest", "whackamole", "eggomania",
+//                "bait", "boloadventures", "bombuzal", "brainman", "chipschallenge",
+//                "modality", "painter", "realsokoban", "thecitadel", "zenpuzzle"};
 
         //Other settings
         boolean visuals = true;
@@ -61,9 +62,10 @@ public class Test
 
         //Game and level to play
         
-        String gameTitle = "thecitadel";
+        String gameTitle = "eggomania";
         String mutatedGamesPath = "../GameChanger/mutatedgames/";
         String generatedGamesPath = "../GameChanger/generatedgames/";
+        String atariGamesPath = "examples/atarigames/";
         
 //        
 //        try {
@@ -77,11 +79,15 @@ public class Test
         String game = gamesPath + gameTitle + ".txt";
         String level1 = gamesPath + gameTitle + "_lvl" + levelIdx +".txt";
 
+        
+//        game = atariGamesPath + gameTitle + ".txt";
+//        level1 = atariGamesPath + gameTitle + "_lvl" + levelIdx +".txt";
+        
         // 1. This starts a game, in a level, played by a human.
 //        ArcadeMachine.playOneGame(game, level1, recordActionsFile, seed);
 
 //         2. This plays a game in a level by the controller.
-        ArcadeMachine.runOneGame(game, level1, visuals, puzzleSolverPlusController, recordActionsFile, seed);
+//        ArcadeMachine.runOneGame(game, level1, visuals, MCTSishController, recordActionsFile, seed);
 
         // 3. This replays a game from an action file previously recorded
         //String readActionsFile = "actionsFile_aliens_lvl0.txt";  //This example is for
@@ -116,17 +122,25 @@ public class Test
         		"controllers.randomOneStep.Agent", "controllers.sampleonesteplookahead.Agent", "controllers.random.Agent",
         		"controllers.doNothing.Agent"};
         
+        //"Good games"
+//        games = new String[]{"aliens", "boulderdash", "frogs",
+//                "missilecommand", "portals", "survivezombies", "zelda",
+//                "digdug",
+//                "overload", "pacman", "seaquest", "whackamole", "eggomania"};
         
-//        controllers = new String[]{"controllers.doNothing.Agent"};
+        //Atari games
+//      games = new String[]{"solarfox", "centipede", "astroblast"};
+        
+//        controllers = new String[]{MCTSishController};
         
         
-//        //6. Let all controllers play through a series of games
-//        int N = 20, L = 1, M = 10;
+        //6. Let all controllers play through a series of games
+//        int N = 20, L = 1, M = 100;
 //        boolean saveActions = true;
 //        String[] levels = new String[L];
 //        String[] actionFiles = new String[L*M];
 //        for (int c = 0; c < controllers.length; c++) {
-//        	String foldername = controllers[c].split("\\.")[1] + "200ticks_all";
+//        	String foldername = controllers[c].split("\\.")[1] + "200ticks_all2";
 //	        try {
 //				File dir = new File(foldername);
 //				dir.mkdir();
@@ -138,8 +152,10 @@ public class Test
 //	        for(int i = 0; i < N; ++i){
 //	            int actionIdx = 0;
 //	            game = gamesPath + games[i] + ".txt";
+////	            game = atariGamesPath + games[i] + ".txt";
 //	            for(int j = 0; j < L; ++j){
 //	                levels[j] = gamesPath + games[i] + "_lvl" + j +".txt";
+////	                levels[j] = atariGamesPath + games[i] + "_lvl" + j +".txt";
 //	                if(saveActions) for(int k = 0; k < M; ++k)
 //	                    actionFiles[actionIdx++] = foldername + "/" + "actions_game_" + i + "_level_" + j + "_" + k + ".txt";
 //	            }
@@ -189,7 +205,7 @@ public class Test
 //    	 String foldername =  controllers[c].split("\\.")[1] + "200ticks";
 //	
 //	     for (int z = 0; z < MUTATIONS; z++) {
-//	    	 String outputFolder = foldername + "_mutation2_"+ z;
+//	    	 String outputFolder = foldername + "_mutation_"+ z;
 //	       try {
 //	    	   File dir = new File(outputFolder);
 //	    	   dir.mkdir();
@@ -213,11 +229,11 @@ public class Test
 //		     } 
 //	     }
 //     }
-//     gameTitle = "seaquest";
-//        game = mutatedGamesPath + gameTitle + "_mutation_" + 1 + ".txt";
+//     gameTitle = "butterflies";
+//        game = mutatedGamesPath + gameTitle + "_mutation_" + 11 + ".txt";
 //        level1 = gamesPath + gameTitle + "_lvl" + 0 +".txt";
-////        ArcadeMachine.playOneGame(game, level1, recordActionsFile, seed);
-//      ArcadeMachine.runOneGame(game, level1, visuals, sampleMCTSController, recordActionsFile, seed);
+//        ArcadeMachine.playOneGame(game, level1, recordActionsFile, seed);
+//      ArcadeMachine.runOneGame(game, level1, visuals, dontDieController, recordActionsFile, seed);
        
        
        
@@ -248,21 +264,22 @@ public class Test
 //         ArcadeMachine.runGames(game, levels, M, randomOneStepController, saveActions? actionFiles:null, seed);
 //	     
 //     }
-       //127, 142, 145
-//        int genGameNr = 219;
-//     game = generatedGamesPath + "gen_game_" + genGameNr + ".txt";
-//     level1 = generatedGamesPath + "gen_game_" + genGameNr + "_lvl" + 0 +".txt";
-//     ArcadeMachine.playOneGame(game, level1, recordActionsFile, seed);
-//   ArcadeMachine.runOneGame(game, level1, true, puzzleSolverController, recordActionsFile, seed);
+       //127, 142, 145, 287
+        //72
+        int genGameNr = 371;
+     game = generatedGamesPath + "gen_game_" + genGameNr + ".txt";
+     level1 = generatedGamesPath + "gen_game_" + genGameNr + "_lvl" + 0 +".txt";
+     ArcadeMachine.playOneGame(game, level1, recordActionsFile, seed);
+//   ArcadeMachine.runOneGame(game, level1, true, dontDieController, recordActionsFile, seed);
         
         
         
         
     //10. Let all controllers play through generated games
-//        controllers = new String[]{"controllers.randomOneStep.Agent", "controllers.random.Agent", "controllers.doNothing.Agent"};
-//
-//        
-//
+        controllers = new String[]{"controllers.random.Agent"};
+
+        
+
 //        int N = 400, L = 1, M = 10;
 //	    boolean saveActions = true;
 //	    String[] levels = new String[L];
@@ -287,6 +304,6 @@ public class Test
 //	            }
 //	            ArcadeMachine.runGames(game, levels, M, controllers[c], saveActions? actionFiles:null, seed);
 //	        }  
-//      	}
+//      }
     }
 }

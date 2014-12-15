@@ -974,7 +974,7 @@ public abstract class Game
         if(num_sprites > MAX_SPRITES)
         {
         	disqualify();
-        	System.out.println("Sprite limit reached. Disqualifiying to save time. Tick:" + getGameTick() + " - class: " + this.getClass().getSimpleName());
+//        	System.out.println("Sprite limit reached. Disqualifiying to save time. Tick:" + getGameTick() + " - class: " + this.getClass().getSimpleName());
             return null;
         }
 
