@@ -17,18 +17,15 @@ public class Agent extends AbstractPlayer{
     public Agent(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
     }
 	
-	public ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
-
-		boolean oneActionBetter = false;
+	public ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) 
+	{
+		boolean allActionsHaveEqualValue = true;
         Types.ACTIONS bestAction = null;
         double maxQ = Double.NEGATIVE_INFINITY;
-        SimpleStateHeuristic heuristic =  new SimpleStateHeuristic(stateObs);
         for (Types.ACTIONS action : stateObs.getAvailableActions()) {
-
             StateObservation stCopy = stateObs.copy();
             stCopy.advance(action);
             double Q = value(stCopy);
-
 
             //System.out.println("Action:" + action + " score:" + Q);
             if (Q > maxQ) {
@@ -36,20 +33,19 @@ public class Agent extends AbstractPlayer{
                 bestAction = action;
             }
             
-            if (Q != maxQ) oneActionBetter = true;
+            if (Q != maxQ) allActionsHaveEqualValue = false;
         }
 
-        
-        if (!oneActionBetter){
+        //Choose a random action if all available actions have same value
+        if (allActionsHaveEqualValue){
         	int idx = r.nextInt(stateObs.getAvailableActions().size());
         	bestAction = stateObs.getAvailableActions().get(idx);
         }
-       // System.out.println("====================");
         return bestAction;
 	}
 	
-    private double value(StateObservation a_gameState) {
-
+    private double value(StateObservation a_gameState) 
+    {
         boolean gameOver = a_gameState.isGameOver();
         Types.WINNER win = a_gameState.getGameWinner();
         double rawScore = a_gameState.getGameScore();
@@ -58,7 +54,7 @@ public class Agent extends AbstractPlayer{
             return -100000;
 
         if(gameOver && win == Types.WINNER.PLAYER_WINS){
-            return 1000 + rawScore; //rawScore + a_gameState.getGameTick() > 1000 ? 100000 : 0;  //WINNING IS ONLY GOOD LATE IN GAME
+            return 1000 + rawScore;
         }
             
         return rawScore;

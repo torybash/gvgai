@@ -92,7 +92,7 @@ public class Agent extends AbstractPlayer{
 		
         double avgTimeTaken = 0, acumTimeTaken = 0;
         long remaining = ect.remainingTimeMillis();
-        int numIters = 0, remainingLimit = 5;
+        int numIters = 0, remainingLimit = 5, lastDepth = 0;
         ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer(TimerType.CPU_TIME);
         boolean queueEmpty = false;
         while(remaining > 2*avgTimeTaken && remaining > remainingLimit)
@@ -246,6 +246,7 @@ public class Agent extends AbstractPlayer{
             acumTimeTaken = (elapsedTimerIteration.elapsedMillis());
             avgTimeTaken = numIters == 0 ? 0 : acumTimeTaken/numIters;
             remaining = ect.remainingTimeMillis();
+            lastDepth = d;
             if (LOOP_VERBOSE) System.out.println("END LOOP--" + elapsedTimerIteration.elapsedMillis() + " --> " + acumTimeTaken + " (" + remaining + "),  avgTimeTaken: " + avgTimeTaken + " - iters: " +numIters);
         }
         
@@ -253,7 +254,7 @@ public class Agent extends AbstractPlayer{
         
         
         if (VERBOSE) System.out.println("Haven't found solution yet - returning ACTION_NIL");
-        if (VERBOSE) System.out.println("Visited nodes: " + visitedNodes.size() + ", Queue size: " + q.size());
+        if (VERBOSE) System.out.println("Visited nodes: " + visitedNodes.size() + ", Queue size: " + q.size() + ", lastDepth: " + lastDepth);
         return ACTIONS.ACTION_NIL;	//haven't found solution yet - return nil
   	}
 
