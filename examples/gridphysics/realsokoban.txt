@@ -13,7 +13,7 @@ BasicGame
         * > box ground
         . > ground
     InteractionSet
-        avatar wall > wallStop
+        avatar wall > stepBack
         box avatar  > bounceForward
         box wall    > undoAll
         box box     > undoAll

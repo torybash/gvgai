@@ -1,0 +1,26 @@
+BasicGame
+    SpriteSet
+        avatar  > OrientedAvatar speed=0.5
+        missile  > Missile color=BLUE img=spaceship
+        forwardMissile  > Missile orientation=RIGHT   color=BLUE img=spaceship
+        autoMissile > Chaser stype=avatar invisible=TRUE
+        autoForwardMissile > Chaser stype=avatar invisible=TRUE
+        
+        timer > Resource limit=4
+    LevelMapping
+        A > avatar autoMissile autoForwardMissile
+        
+    TerminationSet
+        SpriteCounter      stype=avatar               limit=0 win=False
+        
+    InteractionSet
+        avatar  EOS  > stepBack
+        missile avatar > attractGaze
+        avatar autoMissile > changeResource resource=timer value=1
+        avatar autoMissile > spawnIfHasMore resource=timer stype=missile limit=4
+        avatar autoMissile > spawnIfHasMore resource=timer stype=forwardMissile limit=4
+        avatar missile > changeResource resource=timer value=-4
+
+
+
+        

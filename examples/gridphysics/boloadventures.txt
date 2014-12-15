@@ -8,7 +8,7 @@ BasicGame
         box    > Passive img=box
         boulderinhole > Flicker img=boulder limit=1
         boulder    > Passive img=boulder
-        boulderm > Missile img=boulder
+        boulderm > Missile img=boulder orientation=LEFT
         lasercannon > SpawnPoint 
             lcup > img=spaceship stype=lup
             lcdown > img=spaceship stype=ldown

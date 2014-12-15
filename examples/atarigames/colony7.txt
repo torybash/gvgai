@@ -1,0 +1,30 @@
+BasicGame
+    SpriteSet
+        avatar  > ShootAvatar speed=0.5 stype=shot
+        
+        shot > Flicker limit=8
+
+        cannon > SpawnPoint stype=bullet  cooldown=4 img=portal
+        
+        bullet > Chaser stype=shot
+        
+        bulletEater > Immovable
+        bulletDirecter > Immovable
+        
+    LevelMapping
+        A > avatar
+        C > cannon
+        D > bulletDirecter
+        E > bulletEater
+        
+    TerminationSet
+        SpriteCounter      stype=avatar               limit=0 win=False
+        
+    InteractionSet
+        avatar  EOS  > stepBack
+        bullet bulleteater > killSprite
+        bullet EOS > killSprite
+
+
+
+        

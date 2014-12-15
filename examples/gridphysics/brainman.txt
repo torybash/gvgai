@@ -44,14 +44,14 @@ BasicGame
         blue avatar > killSprite scoreChange=2
         red avatar > killSprite scoreChange=5
         
-        boulder wall > undoAll
-        boulder key > undoAll
-        boulder gem > undoAll
+        boulder wall > stepBack
+        boulder key > stepBack
+        boulder gem > stepBack
         boulder boulder > undoAll
         
-        key wall > undoAll
-        key gem > undoAll
-        key key > undoAll
+        key wall > stepBack
+        key gem > stepBack
+        key key > stepBack
         
         exit avatar > killSprite scoreChange=10
         
