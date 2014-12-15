@@ -16,8 +16,11 @@ import ontology.sprites.Resource;
  */
 public class TurnAround extends Effect
 {
+	public int downmoves;
+	
     public TurnAround(InteractionContent cnt)
     {
+    	downmoves = 2;
         this.parseParameters(cnt);
     }
 
@@ -25,10 +28,10 @@ public class TurnAround extends Effect
     public void execute(VGDLSprite sprite1, VGDLSprite sprite2, Game game)
     {
         sprite1.setRect(sprite1.lastrect);
-        sprite1.lastmove = sprite1.cooldown;
-        sprite1.physics.activeMovement(sprite1, Types.DOWN, sprite1.speed);
-        sprite1.lastmove = sprite1.cooldown;
-        sprite1.physics.activeMovement(sprite1, Types.DOWN, sprite1.speed);
+        for (int i = 0; i < downmoves; i++) {
+            sprite1.lastmove = sprite1.cooldown;
+            sprite1.physics.activeMovement(sprite1, Types.DOWN, sprite1.speed);
+		}
         game.reverseDirection(sprite1);
         game._updateCollisionDict(sprite1);
     }

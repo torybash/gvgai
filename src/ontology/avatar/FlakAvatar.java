@@ -29,6 +29,8 @@ public class FlakAvatar extends HorizontalAvatar
     public int minAmmo; //-1 if not used. minimum amount of ammo needed for shooting.
     public int ammoCost; //1 if not used. amount of ammo to subtract after shooting once.
 
+    public int shootCooldown;
+    public int counter;
 
     public FlakAvatar(){}
 
@@ -52,6 +54,8 @@ public class FlakAvatar extends HorizontalAvatar
         minAmmo = -1;
         ammoCost = 1;
         color = Types.GREEN;
+        shootCooldown = 0;
+        counter = 0;
     }
 
 
@@ -74,20 +78,23 @@ public class FlakAvatar extends HorizontalAvatar
 
     public void update(Game game)
     {
+    	counter++;
         super.update(game);
 
         if(!hasMoved)
             updateUse(game);
+    
     }
 
     public void updateUse(Game game)
     {
-        if(Utils.processUseKey(game.ki.getMask()) && hasAmmo())
+        if(Utils.processUseKey(game.ki.getMask()) && hasAmmo() && counter >= shootCooldown)
         {
             VGDLSprite added = game.addSprite(itype, new Vector2d(this.rect.x, this.rect.y));
             if(added != null){ //singleton sprites could not add anything here.
                 reduceAmmo();
                 added.setFromAvatar(true);
+                counter = 0;
             }
         }
     }

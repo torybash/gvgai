@@ -23,6 +23,8 @@ public class SpawnPoint extends SpriteProducer
     public int counter;
     public String stype;
     public int itype;
+    
+    public int lastSpawnTick;
 
     public SpawnPoint(){}
 
@@ -46,6 +48,7 @@ public class SpawnPoint extends SpriteProducer
         color = Types.BLACK;
         cooldown = 1;
         is_static = true;
+        lastSpawnTick = -1;
     }
 
     public void postProcess()
@@ -58,11 +61,15 @@ public class SpawnPoint extends SpriteProducer
 
     public void update(Game game)
     {
-        if((game.getGameTick() % cooldown == 0) && game.getRandomGenerator().nextFloat() < prob)
+    	if (lastSpawnTick == -1) lastSpawnTick = game.getGameTick() - 1;
+    	    	
+        if(((game.getGameTick() - lastSpawnTick) % cooldown == 0) && game.getRandomGenerator().nextFloat() < prob)
         {
             game.addSprite(itype, this.getPosition());
             counter++;
+            lastSpawnTick = game.getGameTick() - 1;
         }
+        
 
         super.update(game);
 

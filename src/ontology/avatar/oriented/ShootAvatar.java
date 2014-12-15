@@ -27,6 +27,9 @@ public class ShootAvatar extends OrientedAvatar
     //This is the sprite I shoot
     public String stype;
     public int itype;
+    
+    public int shootCooldown;
+    public int counter;
 
     public ShootAvatar(){}
 
@@ -50,21 +53,27 @@ public class ShootAvatar extends OrientedAvatar
         ammoId = -1;
         stype = null;
         itype = -1;
+        shootCooldown = 0;
+        counter = 0;
     }
 
     public void update(Game game)
     {
+    	 counter++;
         super.update(game);
 
         if(!hasMoved)
             updateUse(game);
+        
+       
     }
 
     public void updateUse(Game game)
     {
-        if(Utils.processUseKey(game.ki.getMask()) && hasAmmo())
+        if(Utils.processUseKey(game.ki.getMask()) && hasAmmo() && counter >= shootCooldown)
         {
             shoot(game);
+            counter = 0;
         }
     }
 
