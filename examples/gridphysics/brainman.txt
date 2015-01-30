@@ -9,6 +9,7 @@ BasicGame
             blue > Immovable img=mana
         key > Passive img=key
         keym > Missile img=city
+        keyd > Flicker img=key
         exit > Immovable img=goal
         door > Immovable img=door
         boulder > Passive img=boulder 
@@ -37,8 +38,10 @@ BasicGame
         avatar key > stepBack
         avatar keym > stepBack
         
-        door keym > killSprite
-        keym door > killSprite
+        #door keym > killSprite
+        #keym door > killSprite
+        keym door > transformTo stype=keyd
+        door keyd > killSprite
         
         green avatar > killSprite scoreChange=1
         blue avatar > killSprite scoreChange=2

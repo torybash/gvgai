@@ -1,4 +1,4 @@
-package controllers.MCTSish;
+package controllers.MCTSishPlus;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -23,6 +23,8 @@ public class Agent extends AbstractPlayer{
     int heightOfLevel = -1;
     int widthOfLevel = -1;
     
+    double pow_constant = 2; 
+    
     static int EXPAND_DEPTH = 4;
     
     ArrayDeque<Node> q = new ArrayDeque<Node>(); 
@@ -30,6 +32,8 @@ public class Agent extends AbstractPlayer{
 	int[][] randomActMap;
 	static int[] faculty = new int[6];
 	
+	double[] boringPlaces;
+		
 	static final boolean VERBOSE = false;
 	
 	static{
@@ -86,10 +90,21 @@ public class Agent extends AbstractPlayer{
 				}
 			}
 		}
+    	
+    	boringPlaces = new double[((heightOfLevel+2) * (widthOfLevel+2)) + 1];
+    	for (int i = 0; i < boringPlaces.length; i++) {
+    		boringPlaces[i] = 1;
+		}
     }
 	   
 	@Override
 	public ACTIONS act(StateObservation so, ElapsedCpuTimer et) {
+		
+		Vector2d initialPos = so.getAvatarPosition();
+		
+		//Boringplaces gives each tile in the game a float-value (between 0 and 1), which increase whenever the avatar stands on it.
+		boringPlaces[getPositionKey(initialPos)] *= 2;  //Math.pow(boringPlaces[getPositionKey(initialPos)], boringPlacesExponent);
+		
 		
 		q.clear();
         
@@ -98,6 +113,7 @@ public class Agent extends AbstractPlayer{
 		
         boolean[] wallActions = new boolean[actions.length];
         double[] bestActions = new double[actions.length];
+        double[] boringActions = new double[actions.length];
 		
         //////////////////
         //Main loop     //
@@ -109,14 +125,15 @@ public class Agent extends AbstractPlayer{
         while(remaining > 2*avgTimeTaken && remaining > remainingLimit)
         {
         	if (q.isEmpty()){
-        		q.add(currentNode);
+        		throw new RuntimeException("THIS SHOULDN'T HAPPEN!");
+//        		q.add(currentNode);
         	}
         	
         	Node n = q.poll();
-        	boolean expandFromNode = true;
+        	boolean gameEnded = false;
         	
         	
-        	int lastScore = (int) n.state.getGameScore();
+        	double lastScore = n.state.getGameScore();
         	int depth = n.list.size();
         	int lastAct = depth > 0 ? n.list.peekLast() : -1;
         	int firstAct = depth > 0 ? n.list.peekFirst() : -1;
@@ -126,33 +143,49 @@ public class Agent extends AbstractPlayer{
         		//Advance
         		n.state.advance(actions[lastAct]);
         		//Check for "wall actions"
-        		if (depth == 1 && n.state.getAvatarPosition().equals(lastPos) && actions[firstAct] != ACTIONS.ACTION_USE) wallActions[firstAct] = true;
         	}
         	//Node n is now initialized
         	
         	double score = n.state.getGameScore();
         	WINNER won = n.state.getGameWinner();
         	
-        	if (VERBOSE) {System.out.println("Node initialized. Depth: " + depth + " action list: " + getActionList(n.list) + ", score: " + score + ", won: " + won);
-        	System.out.println("last pos: " + lastPos + ", current pos: " + n.state.getAvatarPosition());}
-
         	if (won == WINNER.PLAYER_LOSES){
-        		expandFromNode = false;
+        		gameEnded = true;
         		score = lastScore - 100;
+        	}else if (won == WINNER.PLAYER_WINS){
+        		gameEnded = true;
+        		score = lastScore + 100;
         	}
         	
+        	if (VERBOSE) {System.out.println("Node initialized. Depth: " + depth + ", score: " + score + ", lastScore: " + lastScore + ", won: " + won);
+        	System.out.println("last pos: " + lastPos + ", current pos: " + n.state.getAvatarPosition());
+        	System.out.println(" action list: " + getActionList(n.list));}
+
+        	//Set wall-actions
+    		if (depth == 1){
+    			if (n.state.getAvatarPosition().equals(lastPos) && actions[firstAct] != ACTIONS.ACTION_USE && score == lastScore) wallActions[firstAct] = true;
+    		}
+        	
+    		//Set best-actions and boring-actions
         	if (depth > 0){
-        		bestActions[n.list.peekFirst()] += (score - lastScore) * Math.pow(actions.length, -(depth-1));
+        		bestActions[firstAct] += (score - lastScore) * Math.pow(pow_constant, -(depth-1));
+        		double boringPlaceVal = boringPlaces[getPositionKey(n.state.getAvatarPosition())];
+        		
+        		double boringActVal = boringPlaceVal;
+//        		if (actions[lastAct] == ACTIONS.ACTION_USE) boringActVal *= 0.5;
+        		
+        		boringActVal *= Math.pow(pow_constant, (depth-1));
+        		boringActions[firstAct] += boringActVal;
         	}
         	
         	
-        	if (expandFromNode){
+        	if (!gameEnded){
         		if (depth == 0){
         			int seed = Math.abs(r.nextInt()) % faculty[actions.length];
 	        		for (int i = 0; i < actions.length; i++) {
 	        			int act = randomActMap[seed][i];
-						q.add(new Node(n.state.copy(), (LinkedList<Integer>)n.list.clone(), lastPos, act));
-//						q.add(new Node(n.state.copy(), (LinkedList<Integer>)n.list.clone(), lastPos, i));
+						q.add(new Node(so.copy(), new LinkedList<Integer>(), initialPos, act));
+//						q.add(new Node(n.state.copy(), (LinkedList<Integer>)n.list.clone(), initialPos, i));
 					}
         		}else{
         			int seed = Math.abs(r.nextInt()) % faculty[actions.length];
@@ -164,6 +197,20 @@ public class Agent extends AbstractPlayer{
 	        			break; //<---- NOTICE - LOOP ONLY RUNS ONCE
 	        		}
         		}
+        	}else{
+        		//If lost, expanding with current best action
+                int bestAction = -1;
+                double highestScore = Double.NEGATIVE_INFINITY;
+                int seed = Math.abs(r.nextInt()) % faculty[actions.length];
+                for (int i = 0; i < bestActions.length; i++) {
+                	int act = randomActMap[seed][i];
+                	double actScore = bestActions[i];
+        			if (!wallActions[act] && actScore > highestScore){
+        				highestScore = actScore;
+        				bestAction = act;
+        			}
+                }
+        		q.add(new Node(so.copy(), new LinkedList<Integer>(), initialPos, bestAction));
         	}
         	
         	
@@ -175,22 +222,47 @@ public class Agent extends AbstractPlayer{
 		
         int bestAction = -1;
         double highestScore = Double.NEGATIVE_INFINITY;
+        double lowestScore = Double.POSITIVE_INFINITY;
         boolean allScoresSame = true;
         double lastScore = 0;
+        int seed = Math.abs(r.nextInt()) % faculty[actions.length];
         for (int i = 0; i < bestActions.length; i++) {
-        	double score = bestActions[i];
-			if (!wallActions[i] && score > highestScore){
+        	int act = randomActMap[seed][i];
+        	double score = bestActions[act];
+			if (!wallActions[act] && score > highestScore){
 				highestScore = score;
-				bestAction = i;
+				bestAction = act;
 			}
+			if (!wallActions[act] && score < lowestScore) lowestScore = score;
+			
 			if (i > 0 && score != lastScore) allScoresSame = false;
 			lastScore = score;
-			if (VERBOSE){System.out.println("bestActions["+i+"("+actions[i]+")]: " + bestActions[i]);
-			System.out.println("is wall action? " + wallActions[i]);}
+			if (VERBOSE){System.out.println("bestActions["+act+"("+actions[act]+")]: " + bestActions[act]);
+			System.out.println("is wall action? " + wallActions[act]);}
 		}
         
-        if (allScoresSame || highestScore < -999999) bestAction = r.nextInt(actions.length);
+        
+        if (allScoresSame || highestScore-lowestScore < 0.01){ //Take least boring action
+        	int leastBoringAction = -1;
+        	double leastBoringness = Double.POSITIVE_INFINITY;
+        	seed = Math.abs(r.nextInt()) % faculty[actions.length];
+        	for (int i = 0; i < boringActions.length; i++) {
+        		int act = randomActMap[seed][i];
+        		if (wallActions[act]) continue;
+        		if (boringActions[act] < leastBoringness){
+        			leastBoringness = boringActions[act];
+        			leastBoringAction = act;
+        		}
+    			if (VERBOSE)System.out.println("boringActions["+act+"("+actions[act]+")]: " + boringActions[act]);
+
+			}
+
+        	bestAction = leastBoringAction;
+        }
 		
+        
+        
+        
         if (VERBOSE) System.out.println("Returning.. Iterations: " + numIters + " action: "+ actions[bestAction] + (allScoresSame?" -- allScoresSame!":"") + ", highestScore: "+ highestScore);
 		
 		return actions[bestAction];
@@ -230,8 +302,10 @@ public class Agent extends AbstractPlayer{
     	return result;
     }
     
-	
-
-    
-
+    private int getPositionKey(Vector2d vec){
+    	if (vec == null) return 0;
+    	if (vec.x < 0 || vec.y < 0 || vec.x > blockSize*widthOfLevel || vec.y > blockSize*heightOfLevel) return widthOfLevel *heightOfLevel + 5;
+		return (int)((vec.x/blockSize) + (vec.y/blockSize) * widthOfLevel);
+    	
+    }
 }

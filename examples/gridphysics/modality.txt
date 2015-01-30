@@ -4,7 +4,7 @@ BasicGame
     SpriteSet
         black > Immovable color=BLACK
         white > Immovable color=WHITE
-        grey > Immovable
+        grey > Immovable color=GRAY
         target > Passive img=portal shrinkfactor=0.9
         winTarget > Immovable img=portal shrinkfactor=0.9
         crate > Passive img=box shrinkfactor=0.8
@@ -17,8 +17,8 @@ BasicGame
         . > black
         + > white
         g > grey
-        B > avatar black
-        A > avatar white
+        B > inBlack black
+        A > inWhite white
         * > crate black
         @ > crate white
         t > target black

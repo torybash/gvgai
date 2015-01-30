@@ -44,7 +44,7 @@ public class BasicGame extends Game {
         //Default values for frame rate and maximum number of sprites allowed.
         square_size = -1;
         frame_rate = 25;
-        MAX_SPRITES = 10000;
+        MAX_SPRITES = 1000;
 
         //Parse the arguments.
         this.parseParameters(content);

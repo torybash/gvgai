@@ -198,6 +198,11 @@ public class ArcadeMachine
                 //Finally, when the game is over, we need to tear the player down.
                 ArcadeMachine.tearPlayerDown(player);
 
+                if (toPlay.disqualified){
+                	System.out.println("Controller was disqualifed in level. Playthroughs on level cancelled.");
+                	break;
+                }
+                
                 //reset the game.
                 toPlay.reset();
             }
@@ -360,7 +365,7 @@ public class ArcadeMachine
                     ectAdv = new ElapsedCpuTimer();
                     stCopy.advance(actionPO);
                     advStats++;
-
+                    
                     if( ect.remainingTimeMillis() < CompetitionParameters.WARMUP_TIME*0.5)
                     {
                         ss2.add(ectAdv.elapsedNanos());

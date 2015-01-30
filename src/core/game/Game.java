@@ -213,7 +213,7 @@ public abstract class Game
      * Flag that can only be set to true externally. If true,
      * the agent is disqualified.
      */
-    private boolean disqualified;
+    public boolean disqualified;
 
     /**
      * Next ID to generate for sprites;
@@ -722,7 +722,7 @@ public abstract class Game
      * Handles collisions and triggers events.
      */
     protected void eventHandling()
-    {
+    {    	
         //Array to indicate that the sprite type has no representative in collisions.
         boolean noSprites[] = new boolean[spriteGroups.length];
 
