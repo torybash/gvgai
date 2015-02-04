@@ -26,6 +26,14 @@ import java.util.*;
  */
 public abstract class Game
 {
+	
+	
+	private int num_interactions;
+	private int num_avatar_interactions;
+	private int num_sprites_added;
+	private int num_sprites_killed;
+	private int num_walls;
+	
 
     /**
      * z-level of sprite types (in case of overlap)
@@ -374,6 +382,12 @@ public abstract class Game
         score = 0;
         disqualified=false;
         tooLongECT = null;
+        
+        num_avatar_interactions = 0;
+        num_interactions = 0;
+        num_sprites_added = 0;
+        num_sprites_killed = 0;
+        
 
         //For each sprite type...
         for(int i = 0; i < spriteGroups.length; ++i)
@@ -434,11 +448,14 @@ public abstract class Game
 
         if(itype == wallId)
         {
+        	num_walls++;
             sprite.loadImage("wall.png");
         }else if(itype == avatarId)
         {
             sprite.loadImage("avatar.png");
         }
+        
+        if (gameTick > 0) num_sprites_added++;
     }
 
     /**
@@ -644,6 +661,10 @@ public abstract class Game
     private void printResult()
     {
         System.out.println("Result (1->win; 0->lose):"+ winner.key() + ", Score:" + score + ", timesteps:" + this.getGameTick());
+        System.out.println("Num interactions:" + num_interactions + ", avatar interactions:" + num_avatar_interactions + 
+        		", num_sprites:" + num_sprites + ", num_sprites_added:" + num_sprites_added + ", num_sprites_killed:" + num_sprites_killed +
+        		", num_walls: " + num_walls);
+        
     }
 
     /**
@@ -763,6 +784,8 @@ public abstract class Game
                     {
                         //There is a collision. Trigger the effect.
                         ef.execute(s1,null,this);
+                        num_interactions++;
+                        if (s1.is_avatar) num_avatar_interactions++;
                     }
                 }
 
@@ -851,10 +874,13 @@ public abstract class Game
 
                                         //There is a collision. Apply the effect.
                                         ef.execute(s1,s2,this);
-
+                                        
                                         //Add to events history.
                                         addEvent(s1, s2);
 
+                                        num_interactions++;
+                                        if (s1.is_avatar || s2.is_avatar) num_avatar_interactions++;
+                                        
                                         if(kill_list.contains(s1))
                                             break; //Stop checking this sprite if it was killed.
                                     }
@@ -1025,6 +1051,7 @@ public abstract class Game
     public void killSprite(VGDLSprite sprite)
     {
         kill_list.add(sprite);
+        num_sprites_killed++;
     }
 
     /**
