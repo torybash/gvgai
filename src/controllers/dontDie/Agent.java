@@ -3,7 +3,6 @@ package controllers.dontDie;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -180,7 +179,7 @@ public class Agent extends AbstractPlayer{
 	            for (int i = 0; i < actions.length; i++) {	
 	            	StateObservation stCopy = n.state.copy();            
 	            	Vector2d newPos = pos.copy();
-	            	Node newNode = new Node(stCopy, newPos, (LinkedList<Integer>)n.list.clone());
+	            	Node newNode = new Node(stCopy, newPos, cloneOf(n.list));
 	            	newNode.addAction(i);
 	            	q.add(newNode);
 				}
@@ -205,7 +204,7 @@ public class Agent extends AbstractPlayer{
            
             	StateObservation stCopy = n.state;
             	Vector2d newPos = pos.copy();
-            	Node newNode = new Node(stCopy, newPos, (LinkedList<Integer>)n.list.clone());
+            	Node newNode = new Node(stCopy, newPos, cloneOf(n.list));
             	newNode.addAction(newAction);
             	q.add(newNode);
             }
@@ -348,14 +347,7 @@ public class Agent extends AbstractPlayer{
 		return (int)((vec.x/blockSize) + (vec.y/blockSize) * widthOfLevel);
     	
     }
-    
-    private Vector2d getPositionFromKey(int key){
-    	Vector2d result = new Vector2d();
-    	result.x = (key % widthOfLevel) * blockSize;
-    	result.y = (key / widthOfLevel) * blockSize;
-		return result;
-    	
-    }
+   
     
     private Vector2d changePosByAction(Vector2d pos, int action){
     	Vector2d newPos = pos.copy();
@@ -381,16 +373,16 @@ public class Agent extends AbstractPlayer{
     	return newPos;
     }
     
-    private HashMap<Vector2d, Float> convertBoringList(HashMap<Integer, Float> boringPlaces){
-    	HashMap<Vector2d, Float> result = new HashMap<Vector2d, Float>();
-  
-    	for (Integer key : boringPlaces.keySet()) {
-    		Float val = boringPlaces.get(key);
-    		Vector2d pos = getPositionFromKey(key);
-    		result.put(pos, val);
-		}
-		return result;
-    }
+//    private HashMap<Vector2d, Float> convertBoringList(HashMap<Integer, Float> boringPlaces){
+//    	HashMap<Vector2d, Float> result = new HashMap<Vector2d, Float>();
+//  
+//    	for (Integer key : boringPlaces.keySet()) {
+//    		Float val = boringPlaces.get(key);
+//    		Vector2d pos = getPositionFromKey(key);
+//    		result.put(pos, val);
+//		}
+//		return result;
+//    }
     
     
     ArrayList<ACTIONS> getActionList(LinkedList<Integer> list){
@@ -401,4 +393,18 @@ public class Agent extends AbstractPlayer{
 		}
     	return result;
     }
+    
+	private LinkedList<Integer> cloneOf(LinkedList<Integer> list) {
+		LinkedList<Integer> listClone = new LinkedList<Integer>();
+		
+		if (list.clone() instanceof LinkedList<?>){
+			for(int i = 0; i < ((LinkedList<?>)list).size(); i++){
+				Object item = ((LinkedList<?>)list).get(i);
+	            if(item instanceof Integer){
+	            	listClone.add((Integer) item);
+	            }
+			}
+		}
+		return listClone;
+	}
 }
