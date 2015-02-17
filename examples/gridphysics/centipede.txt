@@ -1,0 +1,38 @@
+BasicGame
+    SpriteSet
+        avatar  > FlakAvatar stype=sam speed=0.9
+        sam  > Missile orientation=UP singleton=TRUE    color=BLUE img=spaceship speed=1.9
+        block > Immovable color=BLACK
+        centipede > Missile orientation=RIGHT
+        blockLife > Resource limit=2
+        blockLifeStart > Immovable
+        bottomWall > Immovable img=wall
+    LevelMapping
+        0 > block blockLifeStart
+        c > centipede
+        I > bottomWall
+        
+    TerminationSet
+        SpriteCounter      stype=avatar               limit=0 win=False
+        SpriteCounter      stype=centipede               limit=0 win=True
+        
+    InteractionSet
+        avatar  bottomWall  > stepBack
+        avatar centipede > killSprite
+        sam EOS > killSprite
+        block sam > killIfHasLess resource=blockLife limit=0 scoreChange=1
+        block sam > changeResource resource=blockLife value=-1
+        sam block > killSprite
+        
+        centipede wall > turnAround downmoves=1
+        centipede block > turnAround downmoves=1
+        centipede bottomWall > reverseDirection
+        centipede sam > spawnIfHasMore resource=null limit=0 stype=blockLifeStart
+        centipede sam > transformTo stype=block
+        sam centipede > killSprite scoreChange=10
+        
+        block blockLifeStart > changeResource resource=blockLife value=2
+        blockLifeStart block > killSprite
+
+
+        

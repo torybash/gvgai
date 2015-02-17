@@ -31,13 +31,15 @@ public class Agent extends AbstractPlayer{
     
     //Constants
     final float K_score = 1.414213562373095f;
-    final float K_death = 10;
-    final float boringPlacesExponent = 9f/10f;
+    final float K_death = 5;
+    final float startBoringness = 0.001f;
+    final float boringPlacesExponent = 8f/10f;
     final float expandRandomness = 0.1f;
     final int winValue = 1000;
     final int loseValue = -100000;
     final int reexpandDepth = 1;
     final float repeatActionBoringReduction = 0.125f;
+    final float oppositeActionBoringIncrease = 0.5f;
     
     public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer)
     {
@@ -55,7 +57,7 @@ public class Agent extends AbstractPlayer{
     	
     	boringPlaces = new float[((heightOfLevel+2) * (widthOfLevel+2)) + 10];
     	for (int i = 0; i < boringPlaces.length; i++) {
-    		boringPlaces[i] = 0.0001f;
+    		boringPlaces[i] = startBoringness;
 		}
     }
 	
@@ -151,7 +153,7 @@ public class Agent extends AbstractPlayer{
             	//Examine the deathActions (and directDeathActions) value
                 if (stateScore <= loseValue){
                 	float newCount = deathActions[firstAct] + (1 / (float)Math.pow(K_death, depth));
-                	deathActions[firstAct] +=  newCount;
+                	deathActions[firstAct] =  newCount;
                 	expandFromNode = false;
                 	if (depth==1) directDeathActions[firstAct] = true;
                 }
@@ -194,7 +196,11 @@ public class Agent extends AbstractPlayer{
 	            	if (i == lastAct) {
 	            		boringness -= repeatActionBoringReduction;
 	            		boringness = boringness < 0 ? 0 : boringness;
+	            	}else if (isOppositeAction(i, lastAct)){
+	            		boringness += oppositeActionBoringIncrease;
+	            		boringness = boringness > 1 ? 1 : boringness;
 	            	}
+	            	
 	            	if (boringness < leastBoringness){
 	            		leastBoringness = boringness;
 	            		leastBoringAct = i;
@@ -284,6 +290,11 @@ public class Agent extends AbstractPlayer{
         //and the number of iterations performed in the loop (decreases thresholds if lower than 300, otherwise increases)
         //In other words: DontDie becomes more and more fearless the more it is bored. 
         //With a low amount of iterations it becomes more easily spooked
+//        f(not bored at all) --> very easily spooked --> thresholds low
+//        f(very bored) --> very hard to spook --> thresholds high
+//        few iterations --> more spooky --> thresholds lower
+//        many iterations --> less spooky --> thresholds higer
+        
         float deadwayThreshold = 1000f*positionBoringness*positionBoringness + 1f;		//1-1000
         float deadGeneralThreshold = 5000f*positionBoringness*positionBoringness + 5f;	//5-5000
         deadwayThreshold *= numIters/300f;
@@ -406,5 +417,28 @@ public class Agent extends AbstractPlayer{
 			}
 		}
 		return listClone;
+	}
+	
+	private boolean isOppositeAction(int act, int lastAct) {
+		ACTIONS action = actions[act];
+		ACTIONS lastAction = actions[lastAct];
+		switch (action) {
+		case ACTION_UP:
+			if (lastAction == ACTIONS.ACTION_DOWN) return true;
+			break;
+		case ACTION_DOWN:
+			if (lastAction == ACTIONS.ACTION_UP) return true;
+			break;
+		case ACTION_LEFT:
+			if (lastAction == ACTIONS.ACTION_RIGHT) return true;
+			break;
+		case ACTION_RIGHT:
+			if (lastAction == ACTIONS.ACTION_LEFT) return true;
+			break;
+		default:
+			break;
+		}
+		
+		return false;
 	}
 }

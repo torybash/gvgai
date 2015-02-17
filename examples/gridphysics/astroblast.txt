@@ -1,0 +1,53 @@
+BasicGame
+    SpriteSet
+        avatar  > FlakAvatar stype=sam shootCooldown=4
+        base > Immovable img=base
+        sam  > Missile orientation=UP    color=BLUE img=spaceship
+        
+        spawner > Bomber orientation=RIGHT invisible=TRUE
+            fastMeteorSpawner > Bomber orientation=RIGHT stype=fastMeteor img=portal prob=0.03 speed=0.9
+            slowMeteorSpawner > Bomber orientation=RIGHT stype=slowMeteor img=portal prob=0.03 speed=0.9
+            fastMeteorPartSpawner > Bomber orientation=RIGHT stype=fastMeteorPart img=portal prob=0.03 speed=0.9
+            slowMeteorPartSpawner > Bomber orientation=RIGHT stype=slowMeteorPart img=portal prob=0.03 speed=0.9
+        
+        
+        meteor > Missile orientation=DOWN img=boulder
+            fastMeteor > speed=0.5
+            slowMeteor > speed=0.25
+        meteorPart > Missile orientation=DOWN img=boulder shrinkfactor=0.5
+            fastMeteorPart > speed=0.5
+            slowMeteorPart > speed=0.25
+        
+        life > Resource limit=5
+        lifeStart > Immovable
+    LevelMapping
+        0 > base
+        1 > fastMeteorSpawner
+        2 > slowMeteorSpawner
+        3 > fastMeteorPartSpawner
+        4 > slowMeteorPartSpawner
+        A > avatar lifeStart
+        
+    TerminationSet
+        SpriteCounter      stype=avatar               limit=0 win=False
+        Timeout limit=1000 win=True
+        
+    InteractionSet
+        avatar  EOS  > stepBack
+        avatar lifeStart > changeResource resource=life value=5
+        lifeStart avatar > killSprite
+        spawner EOS > reverseDirection
+        meteor base > killSprite scoreChange=-5
+        meteorPart base > killSprite scoreChange=-10
+        meteor sam > killSprite scoreChange=10
+        sam meteor > killSprite
+        meteorPart sam > killSprite scoreChange=20
+        sam meteorPart > killSprite
+        avatar meteor > killIfHasLess resource=life limit=0
+        avatar meteor > changeResource resource=life value=-1
+        meteor avatar > killSprite
+        avatar meteorPart > killIfHasLess resource=life limit=0
+        avatar meteorPart > changeResource resource=life value=-1
+        meteorPart avatar > killSprite
+
+        

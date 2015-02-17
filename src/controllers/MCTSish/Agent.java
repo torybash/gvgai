@@ -135,6 +135,9 @@ public class Agent extends AbstractPlayer{
         	if (depth > 0){
         		//Advance
         		n.state.advance(actions[lastAct]);
+        		
+        		if (n.state.getAvatarPosition() == null) return ACTIONS.ACTION_NIL;
+        		
         		//Check for "wall actions"
         		if (depth == 1 && n.state.getAvatarPosition().equals(lastPos) && actions[firstAct] != ACTIONS.ACTION_USE) wallActions[firstAct] = true;
         	}

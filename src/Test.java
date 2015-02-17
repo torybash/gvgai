@@ -23,6 +23,7 @@ public class Test
         String sampleRandomController = "controllers.sampleRandom.Agent";
         String sampleOneStepController = "controllers.sampleonesteplookahead.Agent";
         String sampleMCTSController = "controllers.sampleMCTS.Agent";
+        String sampleOLMCTSController = "controllers.sampleOLMCTS.Agent";
         String sampleGAController = "controllers.sampleGA.Agent";
         String dontDieController = "controllers.dontDie.Agent";
         String puzzleSolverController = "controllers.puzzleSolver.Agent";
@@ -65,9 +66,9 @@ public class Test
 
         //Game and level to play
         
-        String gameTitle = "aliens";
+        String gameTitle = "centipede";
         String mutatedGamesPath = "../GameChanger/mutatedgames/";
-        String generatedGamesPath = "../GameChanger/generatedgames/";
+        String generatedGamesPath = "../GameChanger/rnd_gen_games/";
         String atariGamesPath = "examples/atarigames/";
         
 //        
@@ -90,7 +91,7 @@ public class Test
 //        ArcadeMachine.playOneGame(game, level1, recordActionsFile, seed);
 
 //         2. This plays a game in a level by the controller.
-//        ArcadeMachine.runOneGame(game, level1, visuals, MCTSishController, recordActionsFile, seed);
+//        ArcadeMachine.runOneGame(game, level1, visuals, sampleMCTSController, recordActionsFile, seed);
 
         // 3. This replays a game from an action file previously recorded
         //String readActionsFile = "actionsFile_aliens_lvl0.txt";  //This example is for
@@ -121,50 +122,47 @@ public class Test
 //        String[] controllers = new String[]{"controllers.sampleMCTS.Agent", "controllers.dontDie.Agent", "controllers.sampleGA.Agent", 
 //        		"controllers.randomOneStep.Agent", "controllers.sampleonesteplookahead.Agent", "controllers.sampleRandom.Agent"};
         
-        String[] controllers = new String[]{"controllers.sampleMCTS.Agent", "controllers.dontDie.Agent", "controllers.sampleGA.Agent", 
-        		"controllers.randomOneStep.Agent", "controllers.sampleonesteplookahead.Agent", "controllers.random.Agent",
-        		"controllers.doNothing.Agent"};
+        String[] controllers = new String[]{dontDieController, sampleOLMCTSController, MCTSishController, randomOneStepController,
+        		sampleOneStepController, randomController, doNothingController};
+        
         
         //"Good games"
-//        games = new String[]{"aliens", "boulderdash", "frogs",
-//                "missilecommand", "portals", "survivezombies", "zelda",
-//                "digdug",
-//                "overload", "pacman", "seaquest", "whackamole", "eggomania"};
+        games = new String[]{"aliens", "astroblast", "boulderdash", "centipede", "crackpots",
+        		"digdug", "eggomania", "frogs", "missilecommand", "pacman", "seaquest", 
+        		"solarfox", "zelda"};
         
         //Atari games
 //      games = new String[]{"solarfox", "centipede", "astroblast"};
         
-        controllers = new String[]{MCTSishPlusController};
+//        controllers = new String[]{dontDieController};
         
         
         //6. Let all controllers play through a series of games
-        int N = 20, L = 1, M = 25;
-        boolean saveActions = true;
-        String[] levels = new String[L];
-        String[] actionFiles = new String[L*M];
-        for (int c = 0; c < controllers.length; c++) {
-        	String foldername = controllers[c].split("\\.")[1] + "gvgai_comp_test";
-	        try {
-				File dir = new File(foldername);
-				dir.mkdir();
-				System.setOut(new PrintStream(new FileOutputStream(foldername+"/gamedata.txt")));
-	 		} catch (FileNotFoundException e) {
-	 			e.printStackTrace();
-	 		}
-        	
-	        for(int i = 0; i < N; ++i){
-	            int actionIdx = 0;
-	            game = gamesPath + games[i] + ".txt";
-//	            game = atariGamesPath + games[i] + ".txt";
-	            for(int j = 0; j < L; ++j){
-	                levels[j] = gamesPath + games[i] + "_lvl" + j +".txt";
-//	                levels[j] = atariGamesPath + games[i] + "_lvl" + j +".txt";
-	                if(saveActions) for(int k = 0; k < M; ++k)
-	                    actionFiles[actionIdx++] = foldername + "/" + "actions_game_" + i + "_level_" + j + "_" + k + ".txt";
-	            }
-	            ArcadeMachine.runGames(game, levels, M, controllers[c], saveActions? actionFiles:null, seed);
-	        }  
-        }
+//        int N = games.length, L = 1, M = 10;
+//        boolean saveActions = true;
+//        String[] levels = new String[L];
+//        String[] actionFiles = new String[L*M];
+//        for (int c = 0; c < controllers.length; c++) {
+//        	String foldername = controllers[c].split("\\.")[1] + "_2000ticks_designed";
+//	        try {
+//				File dir = new File(foldername);
+//				dir.mkdir();
+//				System.setOut(new PrintStream(new FileOutputStream(foldername+"/gamedata.txt")));
+//	 		} catch (FileNotFoundException e) {
+//	 			e.printStackTrace();
+//	 		}
+//        	
+//	        for(int i = 0; i < N; ++i){
+//	            int actionIdx = 0;
+//	            game = gamesPath + games[i] + ".txt";
+//	            for(int j = 0; j < L; ++j){
+//	                levels[j] = gamesPath + games[i] + "_lvl" + j +".txt";
+//	                if(saveActions) for(int k = 0; k < M; ++k)
+//	                    actionFiles[actionIdx++] = foldername + "/" + "actions_game_" + i + "_level_" + j + "_" + k + ".txt";
+//	            }
+//	            ArcadeMachine.runGames(game, levels, M, controllers[c], saveActions? actionFiles:null);
+//	        }  
+//        }
   
       
       
@@ -292,51 +290,49 @@ public class Test
 //        int[] genGameList = new int[]{6, 9, 45, 46, 53, 55, 63, 65, 68, 71, 72, 75, 78, 81, 87, 93, 96, 107, 110, 111, 124, 130, 133, 139, 144, 146, 149, 152, 155, 157, 167, 168, 189, 198, 204, 205, 246, 249, 251, 258, 261, 264, 266, 268, 276, 292, 294, 306, 308, 312, 314, 316, 318, 326, 341, 342, 345, 356, 362, 375, 379, 381, 386, 392, 401, 406, 416, 428, 444, 453, 456, 459, 460, 471, 472, 473, 474, 476, 495, 497, 511, 513, 517, 533, 537, 543, 545, 549, 555, 556, 565, 575, 578, 582, 584, 592, 597, 601, 610, 630, 632, 634, 635, 637, 638, 645, 651, 655, 661, 665, 666, 673, 676, 679, 687, 691, 695, 697, 701, 704, 706, 711, 714, 725, 729, 734, 741, 745, 746, 747, 758, 771, 780, 792, 798, 801, 805, 816, 819, 824, 834, 844, 849, 850, 859, 863, 865, 866, 869, 875, 877, 894, 899, 900, 904, 907, 911, 928, 939, 940, 941, 949, 952, 953, 956, 959, 977, 995, 996, 998, 1006, 1007, 1011, 1013, 1025, 1036, 1038, 1041, 1045, 1049, 1050, 1052, 1066, 1067, 1068, 1071, 1077, 1079, 1084, 1085, 1086, 1090, 1093, 1096, 1099, 1115, 1117, 1120, 1121, 1122, 1127, 1132, 1136, 1138, 1141, 1142, 1144, 1147, 1154, 1157, 1158, 1159, 1160, 1169, 1173};
         
         
-//        int N = 5000, L = 1, M = 25;
-//	    boolean saveActions = true;
-//	    String[] levels = new String[L];
-//	    String[] actionFiles = new String[L*M];
-////      	for (int c = 0; c < controllers.length; c++) {
+        int N = 400, L = 1, M = 10;
+	    boolean saveActions = true;
+	    String[] levels = new String[L];
+	    String[] actionFiles = new String[L*M];
+      	for (int c = 0; c < controllers.length; c++) {
 //          	for (int c = 0; c < 1; c++) {
-//
-//      		PrintStream ps = null;
-//      		
-//      		String foldername =  controllers[c].split("\\.")[1] + "800t25pt_5Kgengames";
-//	        try {
-//				File dir = new File(foldername);
-//				dir.mkdir();
-//				ps = new PrintStream(new FileOutputStream(foldername+"/gamedata.txt"));
-//				System.setOut(ps);
-//	 		} catch (FileNotFoundException e) {
-//	 			e.printStackTrace();
-//	 		}
-//      	
-////	        for(int i = 0; i < N; ++i){
-//	        	
-//	        	
+
+      		PrintStream ps = null;
+      		
+      		String foldername =  controllers[c].split("\\.")[1] + "_2000ticks_rndgen";
+	        try {
+				File dir = new File(foldername);
+				dir.mkdir();
+				ps = new PrintStream(new FileOutputStream(foldername+"/gamedata.txt"));
+				System.setOut(ps);
+	 		} catch (FileNotFoundException e) {
+	 			e.printStackTrace();
+	 		}
+      	
+	        for(int i = 0; i < N; ++i){
 //	        for(int g = 0; g < genGameList.length; ++g){
 //	        	int i = genGameList[g];
-//	        	long timer = System.nanoTime();
-//	        	
-//	        	System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
-//	        	System.out.println("Playing game: " + i);
-//	        	
-//	        	System.setOut(ps);
-//	        	 
-//	            int actionIdx = 0;
-//	            game = generatedGamesPath + "gen_game_" + i + ".txt";
-//	            for(int j = 0; j < L; ++j){	            	
-//	                levels[j] = generatedGamesPath + "gen_game_" + i + "_lvl" + j +".txt";
-//	                if(saveActions) for(int k = 0; k < M; ++k)
-//	                    actionFiles[actionIdx++] = foldername + "/" + "actions_game_" + i + "_level_" + j + "_" + k + ".txt";
-//	            }
-//	            ArcadeMachine.runGames(game, levels, M, controllers[c], saveActions? actionFiles:null, seed);
-//	            
-//	        	System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
-//	            System.out.println("Time taken: " + (System.nanoTime() - timer)/1000000000.0 + " s");
-//	        }  
-//	        
-//      }
+	        	long timer = System.nanoTime();
+	        	
+	        	System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+	        	System.out.println("Playing game: " + i);
+	        	
+	        	System.setOut(ps);
+	        	 
+	            int actionIdx = 0;
+	            game = generatedGamesPath + "gen_game_" + i + ".txt";
+	            for(int j = 0; j < L; ++j){	            	
+	                levels[j] = generatedGamesPath + "gen_game_" + i + "_lvl" + j +".txt";
+	                if(saveActions) for(int k = 0; k < M; ++k)
+	                    actionFiles[actionIdx++] = foldername + "/" + "actions_game_" + i + "_level_" + j + "_" + k + ".txt";
+	            }
+	            ArcadeMachine.runGames(game, levels, M, controllers[c], saveActions? actionFiles:null);
+	            
+	        	System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+	            System.out.println("Time taken: " + (System.nanoTime() - timer)/1000000000.0 + " s");
+	        }  
+	        
+      }
         
         
         

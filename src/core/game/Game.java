@@ -870,6 +870,9 @@ public abstract class Game
                                     {
                                         //Affect score:
                                         this.score += ef.scoreChange;
+                                        
+                                        //Lower limit for score at 0
+                                        if (this.score < 0) this.score = 0;
                                         //if(ef.scoreChange!=0) System.out.println("Score: (" + ef.scoreChange + "): " + this.score);
 
                                         //There is a collision. Apply the effect.
