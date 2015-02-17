@@ -1,0 +1,41 @@
+BasicGame
+	SpriteSet
+		sword > Flicker limit=1 color=LIGHTGRAY singleton=True img=sword.png
+		dirt > Immovable color=BROWN img=dirt.png
+		exitdoor > Door color=GREEN img=door.png
+		diamond > Resource limit=10 color=YELLOW img=diamond.png shrinkfactor=0.75
+		boulder > Missile orientation=DOWN speed=0.2 color=GRAY img=boulder.png
+		moving > 
+			avatar > ShootAvatar stype=sword img=avatar.png
+			enemy > RandomNPC
+				crab >  color=RED img=camel.png
+				butterfly >  color=PINK img=butterfly.png
+	InteractionSet
+		dirt avatar > killSprite
+		dirt sword > killSprite
+		diamond avatar > collectResource
+		diamond avatar > killSprite scoreChange=2
+		moving wall > stepBack
+		moving boulder > stepBack
+		avatar boulder > killIfFromAbove scoreChange=-1
+		crab butterfly > transformTo stype=exitdoor
+		avatar crab > killSprite scoreChange=-1
+		boulder dirt > stepBack
+		boulder wall > stepBack
+		avatar enemy > attractGaze
+		exitdoor diamond > undoAll
+		enemy dirt > stepBack
+		enemy diamond > stepBack
+		crab butterfly > killSprite
+		butterfly wall > cloneSprite
+		exitdoor avatar > killIfOtherHasMore limit=9 resource=diamond
+	LevelMapping
+		. > dirt 
+		E > exitdoor 
+		o > boulder 
+		x > diamond 
+		c > crab 
+		b > butterfly 
+	TerminationSet
+		SpriteCounter limit=0 stype=avatar win=False 
+		SpriteCounter limit=0 stype=exitdoor win=True 

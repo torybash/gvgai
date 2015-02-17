@@ -1,0 +1,27 @@
+BasicGame
+	SpriteSet
+		avatar > MovingAvatar img=avatar
+		gen1 > Chaser stype=gen5 img=cocoon
+		gen2 > Chaser stype=gen3 img=hell
+		gen3 > Missile orientation=LEFT img=monster
+		gen4 > Resource limit=14 singleton=TRUE value=2 img=truck
+		gen5 > Bomber total=19 orientation=RIGHT stype=gen4 img=goal prob=0.0256
+	InteractionSet
+		gen3 gen3 > attractGaze scoreChange=8
+		avatar gen5 > killIfHasMore limit=1 resource=gen4 scoreChange=-5
+		gen1 gen4 > changeResource value=3 resource=gen4 scoreChange=6
+		gen5 gen1 > attractGaze
+		gen3 gen2 > attractGaze scoreChange=10
+		gen3 gen1 > attractGaze
+		gen5 gen2 > attractGaze scoreChange=8
+		avatar gen1 > bounceForward
+		gen2 avatar > killIfHasLess limit=7 resource=gen4
+	LevelMapping
+		$ > gen1 
+		% > gen2 
+		& > gen3 
+		' > gen4 
+		( > gen5 
+	TerminationSet
+		SpriteCounter limit=0 stype=gen2 win=TRUE 
+		SpriteCounter limit=0 stype=avatar win=FALSE 
