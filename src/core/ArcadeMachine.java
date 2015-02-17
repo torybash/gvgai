@@ -156,7 +156,7 @@ public class ArcadeMachine
      *                    level_files.length*level_times.
      */
     public static void runGames(String game_file, String[] level_files, int level_times,
-                                String agentName, String[] actionFiles, int randomSeed)
+                                String agentName, String[] actionFiles)
     {
         VGDLFactory.GetInstance().init(); //This always first thing to do.
         VGDLRegistry.GetInstance().init();
@@ -185,6 +185,11 @@ public class ArcadeMachine
                 toPlay.buildLevel(level_file);
 
                 String filename = recordActions ? actionFiles[levelIdx*level_times + i] : null;
+                
+              //Determine the random seed, different for each game to be played.
+                int randomSeed = new Random().nextInt();
+                
+                
                 //Second, create the player.
                 AbstractPlayer player = ArcadeMachine.createPlayer(agentName, filename, toPlay.getObservation(), randomSeed);
 
@@ -193,6 +198,7 @@ public class ArcadeMachine
 
                 //Then, play the game.
                 double score = toPlay.runGame(player, randomSeed);
+//                double score = toPlay.playGame(player, randomSeed);
                 scores.add(score);
 
                 //Finally, when the game is over, we need to tear the player down.

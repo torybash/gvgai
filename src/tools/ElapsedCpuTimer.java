@@ -123,4 +123,12 @@ public class ElapsedCpuTimer {
         return false;
     }
 
+	public ElapsedCpuTimer copy() {
+		ElapsedCpuTimer newCpuTimer = new ElapsedCpuTimer(this.type);
+		newCpuTimer.maxTime = this.maxTime;
+		newCpuTimer.oldTime = this.oldTime;
+		newCpuTimer.bean = this.bean;
+		return newCpuTimer;
+	}
+
 }
