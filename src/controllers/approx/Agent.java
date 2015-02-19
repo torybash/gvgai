@@ -1,14 +1,10 @@
 package controllers.approx;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Random;
 
 import ontology.Types;
 import ontology.Types.ACTIONS;
-import ontology.Types.WINNER;
 import tools.ElapsedCpuTimer;
 import tools.Vector2d;
 import core.game.Observation;
@@ -25,20 +21,6 @@ public class Agent extends AbstractPlayer{
     int heightOfLevel = -1;
     int widthOfLevel = -1;
     
-    static int EXPAND_DEPTH = 4;
-      
-	int[][] randomActMap;
-	static int[] faculty = new int[6];
-	
-	static{
-		for (int i = 0; i < faculty.length; i++) {
-			int val = 1;
-			for (int j = i; j > 1; j--) {
-				val *= j; 
-			}
-			faculty[i] = val;
-		}
-	}
     
     public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer)
     {
@@ -54,10 +36,15 @@ public class Agent extends AbstractPlayer{
     	heightOfLevel = (int) (so.getWorldDimension().height / so.getBlockSize());
     	widthOfLevel = (int) (so.getWorldDimension().width / so.getBlockSize());
     	
-    	randomActMap = new int[faculty[actions.length]][];
-
+    	
+    	String gameTitle = Tools.detectGame(so);
+    	Tools.getWinTermination(gameTitle);
     }
 	   
+
+
+
+
 	@Override
 	public ACTIONS act(StateObservation so, ElapsedCpuTimer et) {
 		
@@ -87,12 +74,15 @@ public class Agent extends AbstractPlayer{
             remaining = et.remainingTimeMillis();
         }
         
-        evaluateState(so);
+//        evaluateState(so);
 		
    
 		return actions[bestAction];
 	}
 	
+	
+
+
 	
 
 	
