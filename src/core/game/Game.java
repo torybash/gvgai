@@ -545,7 +545,11 @@ public abstract class Game
 //				e.printStackTrace();
 //			}
         }
-
+        
+        //Dispose of window frame
+        frame.dispose();
+        
+        
         return handleResult();
     }
 
@@ -591,7 +595,7 @@ public abstract class Game
         this.checkTimeOut();            //Check for end of game by time steps.
 
         
-        this.checkTooLongTick();
+//        this.checkTooLongTick();
         //if(gameTick == 0 || isEnded)
         //    fwdModel.printObservationGrid(); //uncomment this to show the observation grid.
     }

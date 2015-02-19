@@ -11,8 +11,6 @@ import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
 import tools.ElapsedCpuTimer.TimerType;
 import tools.Vector2d;
-import controllers.puzzleSolverPlus.Moveable;
-import core.competition.CompetitionParameters;
 import core.game.Observation;
 import core.game.StateObservation;
 import core.player.AbstractPlayer;
@@ -35,9 +33,10 @@ public class Agent extends AbstractPlayer{
     HashSet<Node> visitedNodes = new HashSet<Node>();
     
     
-    final int MAX_VISITED_NODES = 800000;
+    final int MAX_VISITED_NODES = 35000;
 	
-    final boolean VERBOSE = true;
+    final boolean MINOR_VERBOSE = true;
+    final boolean VERBOSE = false;
     final boolean LOOP_VERBOSE = false;
     
     final boolean depthFirst = false;
@@ -94,7 +93,6 @@ public class Agent extends AbstractPlayer{
         long remaining = ect.remainingTimeMillis();
         int numIters = 0, remainingLimit = 5, lastDepth = 0;
         ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer(TimerType.CPU_TIME);
-        boolean queueEmpty = false;
         while(remaining > 2*avgTimeTaken && remaining > remainingLimit)
         {
             if (LOOP_VERBOSE) System.out.println("START LOOP--" + elapsedTimerIteration.elapsedMillis() + " --> " + acumTimeTaken + " (" + remaining + "),  avgTimeTaken: " + avgTimeTaken + " - iters: " +numIters);
@@ -102,17 +100,16 @@ public class Agent extends AbstractPlayer{
             
         	boolean nodeAlreadyExists = false;
             boolean moveablesHaveChanged = false;
-            boolean nodeInteresting = true;
         	
         	if (q.isEmpty()){
-        		if (VERBOSE) System.out.println("QUEUE EMPTY!!!");
+        		if (VERBOSE || MINOR_VERBOSE) System.out.println("QUEUE EMPTY!!!");
         		
         		wasteTime(1);
         		return ACTIONS.ACTION_NIL; 
         	}
         	
         	if (visitedNodes.size() + q.size() > MAX_VISITED_NODES){
-        		if (VERBOSE) System.out.println("Too many visited nodes! (over " + MAX_VISITED_NODES + ")");
+        		if (VERBOSE || MINOR_VERBOSE) System.out.println("Too many visited nodes! (over " + MAX_VISITED_NODES + ")");
         		
         		wasteTime(1);
         		return ACTIONS.ACTION_NIL; 
@@ -123,7 +120,7 @@ public class Agent extends AbstractPlayer{
         	
         	
         	if (n.lastAction >= 0){
-        		n.list = (LinkedList<Integer>) n.list.clone();
+        		n.list = cloneOf(n.list);
 //        		n.list = n.list.clone();
 	        	n.addAction(n.lastAction);
 	        	n.state = n.state.copy();
@@ -131,9 +128,9 @@ public class Agent extends AbstractPlayer{
         	
         	int d = n.list.size();
                         
-        	HashSet<Moveable> lastMoveables = (HashSet<Moveable>) n.moveables.clone();
+        	HashSet<Moveable> lastMoveables = cloneOfMoveable(n.moveables);
             
-            double lastVal = value(n.state);
+//            double lastVal = value(n.state);
             if (d > 0){
             	n.state.advance(actions[n.lastAction]);
             }
@@ -146,9 +143,7 @@ public class Agent extends AbstractPlayer{
         	
         	if (!lastMoveables.equals(n.moveables)){
         		moveablesHaveChanged = true;
-        		nodeInteresting = true;
         	}
-        	if (val > lastVal) nodeInteresting = true;
         	
         	if (LOOP_VERBOSE){
         		System.out.println("---New node initialized!--- (iteration: " + numIters + " - q length: + " + q.size() +")");
@@ -183,7 +178,7 @@ public class Agent extends AbstractPlayer{
 	        		if (val > 0){
 		        		solution = n.list;
 		        		foundSolution = true;
-		        		if (VERBOSE){ System.out.println("FOUND SOLUTION!");
+		        		if (VERBOSE || MINOR_VERBOSE){ System.out.println("FOUND SOLUTION!");
 			        		System.out.println("Solution: " + getActionList(solution));
 			        		System.out.println("Solution length: " + n.list.size());
 	//		        		System.out.println("Solution length: " + n.currIdx);
@@ -194,6 +189,7 @@ public class Agent extends AbstractPlayer{
 		        		return actions[solution.get(solutionIndex)];
 	        		}else{
 	        			gameLost = true;
+	        			if (LOOP_VERBOSE) System.out.println("Node leads to lose!");
 	        		}
 	        	}
 	
@@ -208,7 +204,7 @@ public class Agent extends AbstractPlayer{
 			    			//Dont expand into walls
 			    			Vector2d expectedNewPos = changePosByAction(n.avatarPos, i);
 			    			if (wallPositions[getPositionKey(expectedNewPos)]){
-	//		    				System.out.println();
+			    				if (LOOP_VERBOSE) System.out.println("Cant make action: " + actions[i] + " from here (would move into wall)");
 			    				continue;
 			    			}
 			    			
@@ -255,12 +251,16 @@ public class Agent extends AbstractPlayer{
         
         if (VERBOSE) System.out.println("Haven't found solution yet - returning ACTION_NIL");
         if (VERBOSE) System.out.println("Visited nodes: " + visitedNodes.size() + ", Queue size: " + q.size() + ", lastDepth: " + lastDepth);
+       
+        if (MINOR_VERBOSE && so.getGameTick() % 50 == 0){
+        	System.out.println("No solution yet.. Visited nodes: " + visitedNodes.size() + ", Queue size: " + q.size() + ", lastDepth: " + lastDepth);
+        }
         return ACTIONS.ACTION_NIL;	//haven't found solution yet - return nil
   	}
 
+	int c = 0;
 	private void wasteTime(float factor) {
 		System.out.println("COULDN'T FIND SOLUTION FOR GAME - WASTING TIME");
-		int c = 0;
 		for (int i = 0; i < 10000000 * factor; i++) {
 			c = (int) Math.pow(i, 2);
 		}
@@ -337,7 +337,8 @@ public class Agent extends AbstractPlayer{
         return rawScore;
     }
     
-    private void printVisitedNodes(){
+    @SuppressWarnings("unused")
+	private void printVisitedNodes(){
 
     	System.out.println("------------------------");
     	System.out.println("--PRINTING VISITED NODES");
@@ -359,13 +360,6 @@ public class Agent extends AbstractPlayer{
     	map[avatar_x][avatar_y] = "A".charAt(0) - 36;
     	
     	System.out.println("Avatar pos: " + n.avatarPos + " -> int pos: " + avatar_x + ", " + avatar_y);
-//    	for (Moveable m : n.moveables) {
-//    		
-//    		int x = (int) (m.pos.x / blockSize);
-//    		int y = (int) (m.pos.y / blockSize);
-//    		System.out.println(m + " -> int pos: " + x + ", " + y);
-//    		map[x][y] = (char)m.type;
-//		}
     	
     	String mapString = "";
     	for (int j = 0; j < heightOfLevel; j++) {
@@ -392,13 +386,13 @@ public class Agent extends AbstractPlayer{
 		return (int)((vec.x/blockSize) + (vec.y/blockSize) * widthOfLevel);
     }
     
-    private Vector2d getPositionFromKey(int key){
-    	Vector2d result = new Vector2d();
-    	result.x = (key % widthOfLevel) * blockSize;
-    	result.y = (key / widthOfLevel) * blockSize;
-		return result;
-    	
-    }
+//	private Vector2d getPositionFromKey(int key){
+//    	Vector2d result = new Vector2d();
+//    	result.x = (key % widthOfLevel) * blockSize;
+//    	result.y = (key / widthOfLevel) * blockSize;
+//		return result;
+//    	
+//    }
     
     private Vector2d changePosByAction(Vector2d pos, int action){
     	Vector2d newPos = pos.copy();
@@ -440,4 +434,47 @@ public class Agent extends AbstractPlayer{
     	}
     	return ACTIONS.ACTION_NIL;
     }
+    
+    
+	private LinkedList<Integer> cloneOf(LinkedList<Integer> list) {
+		LinkedList<Integer> listClone = new LinkedList<Integer>();
+		
+		if (list.clone() instanceof LinkedList<?>){
+			for(int i = 0; i < ((LinkedList<?>)list).size(); i++){
+				Object item = ((LinkedList<?>)list).get(i);
+	            if(item instanceof Integer){
+	            	listClone.add((Integer) item);
+	            }
+			}
+		}
+		return listClone;
+	}
+	
+	private HashSet<Moveable> cloneOfMoveable(HashSet<Moveable> list) {
+		HashSet<Moveable> listClone = new HashSet<Moveable>();
+		
+		if (list.clone() instanceof HashSet<?>){
+			
+			for(int i = 0; i < ((HashSet<?>)list).size(); i++){
+				Object item = ((HashSet<?>)list).iterator().next();
+				if(item instanceof Moveable){
+					listClone.add((Moveable) item);
+				}
+			}
+			
+//			for (Moveable moveable : list.iterator().next()) {
+//				
+//			}
+			
+//			for(int i = 0; i < ((HashSet<?>)list).size(); i++){
+////				fore
+//				
+//				Object item = ((HashSet<?>)list);
+////	            if(item instanceof Integer){
+////	            	listClone.add((Integer) item);
+////	            }
+//			}
+		}
+		return listClone;
+	}
 }

@@ -47,6 +47,7 @@ public class Agent extends AbstractPlayer{
 			faculty[i] = val;
 		}
 	}
+
     
     public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer)
     {
@@ -178,7 +179,7 @@ public class Agent extends AbstractPlayer{
 					}
 	        		expandNew = true;
         		}else{
-        			int seed = Math.abs(r.nextInt()) % faculty[actions.length];
+        			int seed = Math.abs(Math.abs(r.nextInt()) % faculty[actions.length]);
 	        		for (int i = 0; i < actions.length; i++) {
 	        			int act = randomActMap[seed][i];
 	        			if (isOppositeAction(act, firstAct)) continue;
