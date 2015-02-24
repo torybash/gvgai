@@ -1,8 +1,3 @@
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.Random;
 
 import core.ArcadeMachine;
@@ -17,6 +12,12 @@ import core.ArcadeMachine;
 public class Test
 {
 
+	  private static final long MEGABYTE = 1024L * 1024L;
+
+	  public static long bytesToMegabytes(long bytes) {
+	    return bytes / MEGABYTE;
+	  }
+	
     public static void main(String[] args)
     {
         //Available controllers:
@@ -66,11 +67,15 @@ public class Test
 
         //Game and level to play
         
-        String gameTitle = "centipede";
-        String mutatedGamesPath = "../GameChanger/mutatedgames/";
-        String generatedGamesPath = "../GameChanger/rnd_gen_games/";
-        String atariGamesPath = "examples/atarigames/";
+        String gameTitle = "realsokoban";
         
+        String mutatedGamesPath = "../GameChanger/mutatedgames/";
+        String rndGenGamesPath = "../GameChanger/rnd_gen_games/";
+        String atariGamesPath = "examples/atarigames/";
+        String genGamesPath = "examples/gengames/";
+        String rngGenPuzzlePath = "../GameChanger/rnd_gen_puzzle_games/";
+        String evolvedGamesPath = "../GameChanger/game_generator/evolved_games/";
+//        evolvedGamesPath += "21;02,18;33/";
 //        
 //        try {
 //			System.setOut(new PrintStream(new FileOutputStream("gamedata.txt")));
@@ -79,20 +84,29 @@ public class Test
 //		}
         
         int gameIdx = 8;
-        int levelIdx =0; //level names from 0 to 4 (game_lvlN.txt).
+        int levelIdx = 0; //level names from 0 to 4 (game_lvlN.txt).
         String game = gamesPath + gameTitle + ".txt";
         String level1 = gamesPath + gameTitle + "_lvl" + levelIdx +".txt";
 
         
-//        game = atariGamesPath + gameTitle + ".txt";
-//        level1 = atariGamesPath + gameTitle + "_lvl" + levelIdx +".txt";
+//        game = evolvedGamesPath + gameTitle + ".txt";
+//        level1 = evolvedGamesPath + gameTitle + "_lvl" + levelIdx +".txt";
         
         // 1. This starts a game, in a level, played by a human.
 //        ArcadeMachine.playOneGame(game, level1, recordActionsFile, seed);
 
 //         2. This plays a game in a level by the controller.
-//        ArcadeMachine.runOneGame(game, level1, visuals, sampleMCTSController, recordActionsFile, seed);
+        ArcadeMachine.runOneGame(game, level1, visuals, puzzleSolverPlusController, recordActionsFile, seed);
 
+        // Get the Java runtime
+        Runtime runtime = Runtime.getRuntime();
+        // Run the garbage collector
+        runtime.gc();
+        // Calculate the used memory
+        long memory = runtime.totalMemory() - runtime.freeMemory();
+        System.out.println("Used memory is bytes: " + memory);
+        System.out.println("Used memory is megabytes: " + bytesToMegabytes(memory));
+        
         // 3. This replays a game from an action file previously recorded
         //String readActionsFile = "actionsFile_aliens_lvl0.txt";  //This example is for
         //ArcadeMachine.replayGame(game, level1, visuals, readActionsFile);
@@ -290,49 +304,49 @@ public class Test
 //        int[] genGameList = new int[]{6, 9, 45, 46, 53, 55, 63, 65, 68, 71, 72, 75, 78, 81, 87, 93, 96, 107, 110, 111, 124, 130, 133, 139, 144, 146, 149, 152, 155, 157, 167, 168, 189, 198, 204, 205, 246, 249, 251, 258, 261, 264, 266, 268, 276, 292, 294, 306, 308, 312, 314, 316, 318, 326, 341, 342, 345, 356, 362, 375, 379, 381, 386, 392, 401, 406, 416, 428, 444, 453, 456, 459, 460, 471, 472, 473, 474, 476, 495, 497, 511, 513, 517, 533, 537, 543, 545, 549, 555, 556, 565, 575, 578, 582, 584, 592, 597, 601, 610, 630, 632, 634, 635, 637, 638, 645, 651, 655, 661, 665, 666, 673, 676, 679, 687, 691, 695, 697, 701, 704, 706, 711, 714, 725, 729, 734, 741, 745, 746, 747, 758, 771, 780, 792, 798, 801, 805, 816, 819, 824, 834, 844, 849, 850, 859, 863, 865, 866, 869, 875, 877, 894, 899, 900, 904, 907, 911, 928, 939, 940, 941, 949, 952, 953, 956, 959, 977, 995, 996, 998, 1006, 1007, 1011, 1013, 1025, 1036, 1038, 1041, 1045, 1049, 1050, 1052, 1066, 1067, 1068, 1071, 1077, 1079, 1084, 1085, 1086, 1090, 1093, 1096, 1099, 1115, 1117, 1120, 1121, 1122, 1127, 1132, 1136, 1138, 1141, 1142, 1144, 1147, 1154, 1157, 1158, 1159, 1160, 1169, 1173};
         
         
-        int N = 400, L = 1, M = 10;
-	    boolean saveActions = true;
-	    String[] levels = new String[L];
-	    String[] actionFiles = new String[L*M];
-      	for (int c = 0; c < controllers.length; c++) {
-//          	for (int c = 0; c < 1; c++) {
-
-      		PrintStream ps = null;
-      		
-      		String foldername =  controllers[c].split("\\.")[1] + "_2000ticks_rndgen";
-	        try {
-				File dir = new File(foldername);
-				dir.mkdir();
-				ps = new PrintStream(new FileOutputStream(foldername+"/gamedata.txt"));
-				System.setOut(ps);
-	 		} catch (FileNotFoundException e) {
-	 			e.printStackTrace();
-	 		}
-      	
-	        for(int i = 0; i < N; ++i){
-//	        for(int g = 0; g < genGameList.length; ++g){
-//	        	int i = genGameList[g];
-	        	long timer = System.nanoTime();
-	        	
-	        	System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
-	        	System.out.println("Playing game: " + i);
-	        	
-	        	System.setOut(ps);
-	        	 
-	            int actionIdx = 0;
-	            game = generatedGamesPath + "gen_game_" + i + ".txt";
-	            for(int j = 0; j < L; ++j){	            	
-	                levels[j] = generatedGamesPath + "gen_game_" + i + "_lvl" + j +".txt";
-	                if(saveActions) for(int k = 0; k < M; ++k)
-	                    actionFiles[actionIdx++] = foldername + "/" + "actions_game_" + i + "_level_" + j + "_" + k + ".txt";
-	            }
-	            ArcadeMachine.runGames(game, levels, M, controllers[c], saveActions? actionFiles:null);
-	            
-	        	System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
-	            System.out.println("Time taken: " + (System.nanoTime() - timer)/1000000000.0 + " s");
-	        }  
-	        
-      }
+//        int N = 400, L = 1, M = 10;
+//	    boolean saveActions = true;
+//	    String[] levels = new String[L];
+//	    String[] actionFiles = new String[L*M];
+//      	for (int c = 0; c < controllers.length; c++) {
+////          	for (int c = 0; c < 1; c++) {
+//
+//      		PrintStream ps = null;
+//      		
+//      		String foldername =  controllers[c].split("\\.")[1] + "_2000ticks_rndgen";
+//	        try {
+//				File dir = new File(foldername);
+//				dir.mkdir();
+//				ps = new PrintStream(new FileOutputStream(foldername+"/gamedata.txt"));
+//				System.setOut(ps);
+//	 		} catch (FileNotFoundException e) {
+//	 			e.printStackTrace();
+//	 		}
+//      	
+//	        for(int i = 0; i < N; ++i){
+////	        for(int g = 0; g < genGameList.length; ++g){
+////	        	int i = genGameList[g];
+//	        	long timer = System.nanoTime();
+//	        	
+//	        	System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+//	        	System.out.println("Playing game: " + i);
+//	        	
+//	        	System.setOut(ps);
+//	        	 
+//	            int actionIdx = 0;
+//	            game = rndGenGamesPath + "gen_game_" + i + ".txt";
+//	            for(int j = 0; j < L; ++j){	            	
+//	                levels[j] = rndGenGamesPath + "gen_game_" + i + "_lvl" + j +".txt";
+//	                if(saveActions) for(int k = 0; k < M; ++k)
+//	                    actionFiles[actionIdx++] = foldername + "/" + "actions_game_" + i + "_level_" + j + "_" + k + ".txt";
+//	            }
+//	            ArcadeMachine.runGames(game, levels, M, controllers[c], saveActions? actionFiles:null);
+//	            
+//	        	System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+//	            System.out.println("Time taken: " + (System.nanoTime() - timer)/1000000000.0 + " s");
+//	        }  
+//	        
+//      }
         
         
         

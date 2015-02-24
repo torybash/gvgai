@@ -37,7 +37,7 @@ public class Agent extends AbstractPlayer{
     
     final int MAX_VISITED_NODES = 800000;
 	
-    final boolean VERBOSE = true;
+    final boolean VERBOSE = false;
     final boolean LOOP_VERBOSE = false;
     
     final boolean depthFirst = false;
@@ -70,10 +70,14 @@ public class Agent extends AbstractPlayer{
 		}    	
     }
     boolean first = true;
-	
+    long tim;
+
+    
 	public ACTIONS act(StateObservation so, ElapsedCpuTimer ect) {
 		if (first){
 			first = false;
+			tim = System.currentTimeMillis();
+			
 			return ACTIONS.ACTION_NIL;
 		}
 //		if (foundSolution && solutionIndex< solution.size()-1){
@@ -190,6 +194,9 @@ public class Agent extends AbstractPlayer{
 			        		System.out.println("Visited nodes: " + visitedNodes.size());
 			        		System.out.println("Queue size: " + q.size());
 		        		}
+		        		
+		        		System.out.println("puzzleSolverPlus.Agent duration: " + (System.currentTimeMillis()-tim));
+		        		
 //		        		return actions[solution[solutionIndex]];
 		        		return actions[solution.get(solutionIndex)];
 	        		}else{
