@@ -1,4 +1,4 @@
-package controllers.dontDie;
+package controllers.Explorer;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class Agent extends AbstractPlayer{
     public static Types.ACTIONS[] actions;
 	Random r;
     
-    float feelingOfDeadliness = 0;
+    float lastGeneralDeadliness = 0;
         
     float[] boringPlaces;
     
@@ -26,13 +26,12 @@ public class Agent extends AbstractPlayer{
     int heightOfLevel = -1;
     int widthOfLevel = -1;
     
-    final boolean MINOR_VERBOSE = false;
     final boolean VERBOSE = false;
     final boolean LOOP_VERBOSE = false;
     
     //Constants
-    float K_score; // = 1.414213562373095f;
-    float K_death; // = 5;
+    final float K_score = 1.414213562373095f;
+    final float K_death = 4f;
     final float startBoringness = 0.001f;
     final float boringPlacesExponent = 8f/10f;
     final float expandRandomness = 0.1f;
@@ -40,12 +39,11 @@ public class Agent extends AbstractPlayer{
     final int loseValue = -100000;
     final int reexpandDepth = 1;
     final float repeatActionBoringReduction = 0.125f;
-    final float oppositeActionBoringIncrease = 0.125f;
+    final float oppositeActionBoringIncrease = 0.25f;
     
     public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer)
     {
-    	
-    	ArrayList<Types.ACTIONS> act = so.getAvailableActions();
+        ArrayList<Types.ACTIONS> act = so.getAvailableActions();
         actions = new Types.ACTIONS[act.size()];
         for(int i = 0; i < actions.length; ++i)
         {
@@ -61,11 +59,6 @@ public class Agent extends AbstractPlayer{
     	for (int i = 0; i < boringPlaces.length; i++) {
     		boringPlaces[i] = startBoringness;
 		}
-    	
-    	
-    	
-    	K_score = (float)Math.sqrt(actions.length);
-    	K_death = (float)Math.sqrt(actions.length);
     }
 	
 	public ACTIONS act(StateObservation so, ElapsedCpuTimer et) {		
@@ -103,9 +96,6 @@ public class Agent extends AbstractPlayer{
         //Examines if possible actions can directly kill the avatar
         boolean[] directDeathActions = new boolean[actions.length]; 
         
-        //Count the amount of times a search with each action has been started
-        int[] actionIterations = new int[actions.length];
-        
         for (int i = 0; i < actions.length; i++) {
         	bestVals[i] = 0;
         	bestNodes[i] = null;
@@ -115,29 +105,12 @@ public class Agent extends AbstractPlayer{
         	directDeathActions[i] = false;
 		}
         
-        
-        boolean allowReexpand = false;
-        int expandDepth = 5;
-        if (feelingOfDeadliness > 0.0000001){
-        	expandDepth = 4;
-        }
-        if (feelingOfDeadliness > 0.00001){
-        	expandDepth = 3;
-        }
-        if (feelingOfDeadliness > 0.001){
-        	expandDepth = 2;
-        }
-        if (feelingOfDeadliness > 0.01){
-        	expandDepth = 1;
-        }
-        
-        
         //////////////////
         //Main loop     //
         //////////////////
         double avgTimeTaken = 0, acumTimeTaken = 0;
         long remaining = et.remainingTimeMillis();
-        int numIters = 0, remainingLimit = 4, reexpands = 0;
+        int numIters = 0, remainingLimit = 3;
         Vector2d pos = currentPos.copy();
         int lastDepth = 0;
         ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
@@ -159,11 +132,9 @@ public class Agent extends AbstractPlayer{
             int lastAct = depth>0 ? n.list.peekLast() : -1;
             int firstAct = depth>0 ? n.list.peekFirst() : -1;
             
-        	if (depth > 0) actionIterations[firstAct]++;
-            
             //Advance the state observation according to the last action
             if (depth > 0) n.state.advance(actions[lastAct]);  
-                        
+            
             //Get the new states avatar position and score
             pos = n.state.getAvatarPosition();
             double stateScore = value(n.state);
@@ -182,7 +153,7 @@ public class Agent extends AbstractPlayer{
             	//Examine the deathActions (and directDeathActions) value
                 if (stateScore <= loseValue){
                 	float newCount = deathActions[firstAct] + (1 / (float)Math.pow(K_death, depth));
-                	deathActions[firstAct] =  newCount;
+                	deathActions[firstAct] +=  newCount;
                 	expandFromNode = false;
                 	if (depth==1) directDeathActions[firstAct] = true;
                 }
@@ -196,32 +167,18 @@ public class Agent extends AbstractPlayer{
             //Extra check for game over (probably not needed)
             if (n.state.isGameOver()) expandFromNode = false;
             
-            
-            if (depth > expandDepth) expandFromNode = false;
-            
-//            System.out.println("q.size(): " + q.size() + " depth: " + depth);
             //Very importantly! Add extra nodes from the start, to counter random events in games
-            if (allowReexpand && q.size() < actions.length && depth > expandDepth){ 
+            if (depth > reexpandDepth && depth != lastDepth){ 
             	q.add(currentNode);
-            	reexpands++;
-            	allowReexpand = false;
             }
-            
-
 
             //////////////////
             //Node expansion//
             //////////////////
             int newAction = -1;
             if (depth == 0){
-            	allowReexpand = true;
-            	
-            	
-            	
             	//Advance with all possible actions
 	            for (int i = 0; i < actions.length; i++) {	
-	            	if (directDeathActions[i]) continue;
-	            	
 	            	StateObservation stCopy = n.state.copy();            
 	            	Vector2d newPos = pos.copy();
 	            	Node newNode = new Node(stCopy, newPos, cloneOf(n.list));
@@ -234,15 +191,15 @@ public class Agent extends AbstractPlayer{
             	float leastBoringness = Float.MAX_VALUE;
 	            for (int i = 0; i < actions.length; i++) {		            	
 	            	Vector2d expectPos = changePosByAction(pos, i);
-	            	if (wallActions[i]) continue;
 	            	float boringness = boringPlaces[getPositionKey(expectPos)] + (r.nextFloat() - 0.5f) * expandRandomness;
 	            	
 	            	if (i == lastAct) {
 	            		boringness -= repeatActionBoringReduction;
-//	            		boringness = boringness < 0 ? 0 : boringness;
-	            	}else if (isOppositeAction(i, lastAct)){
+	            		boringness = boringness < 0 ? 0 : boringness;
+	            	}
+	            	if (isOppositeAction(i, lastAct)){
 	            		boringness += oppositeActionBoringIncrease;
-//	            		boringness = boringness > 1 ? 1 : boringness;
+	            		boringness = boringness > 1 ? 1 : boringness;
 	            	}
 	            	
 	            	if (boringness < leastBoringness){
@@ -252,11 +209,14 @@ public class Agent extends AbstractPlayer{
 	            }
 	            newAction = leastBoringAct;
            
-            	StateObservation stCopy = n.state;
-            	Vector2d newPos = pos.copy();
-            	Node newNode = new Node(stCopy, newPos, cloneOf(n.list));
-            	newNode.addAction(newAction);
-            	q.add(newNode);
+//            	StateObservation stCopy = n.state;
+//            	Vector2d newPos = pos.copy();
+//            	Node newNode = new Node(stCopy, newPos, cloneOf(n.list));
+//            	newNode.addAction(newAction);
+//            	q.add(newNode);
+	            
+	            n.addAction(newAction);
+	            q.add(n);
             }
             
             lastDepth = depth;
@@ -273,15 +233,6 @@ public class Agent extends AbstractPlayer{
         /////////////////////////////////////
         //Deciding action / Result analysis//
         /////////////////////////////////////
-        
-        //Normalise arrays
-        for (int i = 0; i < actions.length; i++) {
-        	bestVals[i] /= (float) actionIterations[i];
-        	deathActions[i] /= (float) actionIterations[i];
-        	leastBoringActions[i] /= (float) actionIterations[i];
-		}
-        
-        
         //Find the best node of all actions
         double bestVal = -Double.MAX_VALUE;
         double worstVal = Double.MAX_VALUE;
@@ -333,7 +284,6 @@ public class Agent extends AbstractPlayer{
         int leastDeadlyAct = -1;
         boolean spooked = false;
         for (int i = 0; i < actions.length; i++) {
-        	        	
         	generalDeadliness += deathActions[i];
         	if (deathActions[i] < leastDeadly){
 				leastDeadlyAct = i;
@@ -345,74 +295,31 @@ public class Agent extends AbstractPlayer{
         //and the number of iterations performed in the loop (decreases thresholds if lower than 300, otherwise increases)
         //In other words: DontDie becomes more and more fearless the more it is bored. 
         //With a low amount of iterations it becomes more easily spooked
-//        f(not bored at all) --> very easily spooked --> thresholds low
-//        f(very bored) --> very hard to spook --> thresholds high
-//        few iterations --> more spooky --> thresholds lower
-//        many iterations --> less spooky --> thresholds higer
-        
-        float deadwayThreshold = -1;
-        float deadGeneralThreshold = -1;
-        if (generalDeadliness > 0){
-//	        deadwayThreshold = 100f*positionBoringness*positionBoringness + 0.001f;		//1-1000
-	        deadwayThreshold = (float) Math.pow(positionBoringness, actions.length) + 0.01f;		//1-1000
-//	        deadGeneralThreshold = actions.length*100f*positionBoringness*positionBoringness + 0.01f*actions.length;	//5-5000
-	        deadGeneralThreshold = actions.length*(float) Math.pow(positionBoringness, actions.length)  + 0.01f*actions.length;	//5-5000
-	        deadwayThreshold *= numIters/300f;
-	        deadGeneralThreshold *= numIters/300f;
-	       
-	        if (action == -1)  action = r.nextInt(actions.length);
-	        if (generalDeadliness > deadGeneralThreshold || deathActions[action] > deadwayThreshold){
-	        	action = leastDeadlyAct;
-	        	spooked = true;
-	        }
-		}
-        
-        //Check if taking action kills us
-        boolean allActionsDeadly = true;
-        for (int i = 0; i < actions.length; i++) {
-			if (!directDeathActions[i]){
-				allActionsDeadly = false;
-				break;
-			}
-		}
-        
-        //Maybe moving into a wall can make us survive?
-        if (action == -1){
-	        for (int i = 0; i < actions.length; i++) {
-	        	if (directDeathActions[i]) continue;
-	        	action = i;
-	        	break;
-	        }
+        float deadwayThreshold = 1000f*positionBoringness*positionBoringness + 1f;		//1-1000
+        float deadGeneralThreshold = 5000f*positionBoringness*positionBoringness + 5f;	//5-5000
+        deadwayThreshold *= numIters/300f;
+        deadGeneralThreshold *= numIters/300f;
+       
+        if (action == -1)  action = r.nextInt(actions.length);
+        if (generalDeadliness > deadGeneralThreshold || deathActions[action] > deadwayThreshold){
+        	action = leastDeadlyAct;
+        	spooked = true;
         }
-        
-        
 
-        if (generalDeadliness > feelingOfDeadliness){
-        	feelingOfDeadliness = generalDeadliness;
-        }else{
-        	feelingOfDeadliness *= 0.9f;
-        }
         
-        //Is returning nil the best thing to do? 
-        if (allActionsDeadly || action == -1 || numIters == 1){
-        	if (VERBOSE || (MINOR_VERBOSE && (directDeathActions[action] == true))){
-        		System.out.println("COULD NOT FIND ANYTHING INTERESTING TO DO - RETURNING NIL");
-        	}
-        	return ACTIONS.ACTION_NIL;
-        }
+        //Still haven't found an action?! Pick a random one
+        if (action == -1)  action = r.nextInt(actions.length);
         
-       if (VERBOSE || (MINOR_VERBOSE && generalDeadliness > 0.00001)){
-    	   System.out.println("Q size: " + q.size());
+       if (VERBOSE){
     	   System.out.println("deadwayThreshold: " + deadwayThreshold + " deadGeneralThreshold: " + deadGeneralThreshold + " - pos boring: " + positionBoringness);
     	   if (noActualBest) System.out.println("NO ACTUAL BEST MOVE"); else System.out.println();
     	   if (spooked) System.out.println("SPOOOOOOOOOOOOOOOKED"); else System.out.println();
-	        System.out.println("---ACTUAL ACTION CHOSEN: " + actions[action] + " , iterations: " +  numIters + ", reexpands: " + reexpands);
+	        System.out.println("---ACTUAL ACTION CHOSEN: " + actions[action] + " , iterations: " +  numIters);
 	        System.out.println("BEST ACTION: " + (bestNode.list.peekFirst() != null ? actions[bestNode.list.peekFirst()] : "ERR"));
 	        System.out.println("\t\t\t" + Arrays.toString(actions));
 	        System.out.println("BEST NODES: \t\t" + Arrays.toString(bestVals));
 
 	        System.out.println("Death actions:\t\t "+Arrays.toString(deathActions));
-	        System.out.println("Direct death actions:\t\t "+Arrays.toString(directDeathActions));
 	        System.out.println("Wall actions:\t\t "+Arrays.toString(wallActions));
 	        System.out.println("Least boring actions:\t" + Arrays.toString(leastBoringActions));
 	        System.out.println("Current avatar pos: " + so.getAvatarPosition());
@@ -420,10 +327,12 @@ public class Agent extends AbstractPlayer{
 	        System.out.println("Current pos boringness: " + boringPlaces[getPositionKey(currentPos)]);        
 	        System.out.println("Planned move boringness: " + boringPlaces[getPositionKey(changePosByAction(currentPos, action))]);
 	        System.out.println("Expected next pos: " + changePosByAction(currentPos, action));
-	        System.out.println("General deadliness: " +generalDeadliness + " - deadly feeling: " + feelingOfDeadliness);
-	        System.out.println("Action iterations: " + Arrays.toString(actionIterations));
+	        System.out.println("General deadliness: " +generalDeadliness);
        }
+       lastGeneralDeadliness = generalDeadliness;
        
+
+
        return actions[action];
 	}
 	
@@ -509,6 +418,7 @@ public class Agent extends AbstractPlayer{
 		}
 		return listClone;
 	}
+	
 	
 	private boolean isOppositeAction(int act, int lastAct) {
 		ACTIONS action = actions[act];
