@@ -10,7 +10,8 @@ BasicGame
         goal > Immovable img=door singleton=TRUE
         crate    > Passive img=box shrinkfactor=0.8
         boulder    > Passive img=boulder shrinkfactor=0.8
-        holefilling > Flicker img=box limit=0
+        squareholefilling > Flicker img=box limit=0
+        roundholefilling > Flicker img=box limit=0
     LevelMapping
         0 > roundhole
         1 > squarehole
@@ -27,9 +28,10 @@ BasicGame
         boulder wall > undoAll
         boulder goal > undoAll
         
-        boulder roundhole > killSprite
-        roundhole boulder > killSprite
         boulder squarehole > killSprite
+
+        boulder roundhole > transformTo stype=roundholefilling 
+        roundhole roundholefilling > killSprite
         
         crate avatar  > bounceForward
         crate crate  > bounceForward
@@ -47,8 +49,8 @@ BasicGame
         crate goal > undoAll
         crate roundhole > undoAll
         
-        crate squarehole > killSprite
-        squarehole crate > killSprite
+        crate squarehole > transformTo stype=squareholefilling
+        squarehole squareholefilling > killSprite
         
 
         
