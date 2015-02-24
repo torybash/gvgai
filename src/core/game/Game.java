@@ -605,7 +605,7 @@ public abstract class Game
 		}else{
 			long elapsed = tooLongECT.elapsedMillis();
 			
-			if (elapsed - lastElapsed > CompetitionParameters.ACTION_TIME_DISQ + 5){
+			if (elapsed - lastElapsed > CompetitionParameters.ACTION_TIME_DISQ * 2){
 				System.out.println("lastElapsed: " + lastElapsed + " - elapsed: " + elapsed);
 				System.out.println("Game has been diqualiefied for taking too lang on a frame");
 				disqualify();
